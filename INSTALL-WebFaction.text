@@ -1,0 +1,25 @@
+/home/calroc/webapps/smlaum
+/home/calroc/webapps/smlaum/templates
+/home/calroc/webapps/smlaum/lib/python2.7
+/home/calroc/webapps/smlaum_static
+
+
+export AUM=/home/sforman/hom/SMLAUM
+export WF=/home/calroc/webapps
+
+$AUM/static/*    => $WF/smlaum_static/*
+$AUM/templates/* => $WF/smlaum/templates/*
+$AUM/*.py        => $WF/smlaum/lib/python2.7/*.py
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+export AUM=/home/sforman/hom/SMLAUM
+export REMOTE=calroc.webfactional.com:/home/calroc/webapps
+
+scp -Br $AUM/static/*     $REMOTE/smlaum_static/
+scp -Br $AUM/templates/*  $REMOTE/smlaum/templates/*
+scp -B $AUM/*.py         $REMOTE/smlaum/lib/python2.7/*.py
+
+ssh calroc.webfactional.com '~/webapps/smlaum/apache2/bin/restart'

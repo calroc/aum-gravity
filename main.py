@@ -1,5 +1,15 @@
+import os
 from flask import Flask, url_for, render_template
-app = Flask(__name__)
+
+
+WEBFACTION_TEMPLATES = '/home/calroc/webapps/smlaum/templates'
+
+
+if os.path.exists(WEBFACTION_TEMPLATES):
+    app = Flask(__name__, template_folder=WEBFACTION_TEMPLATES)
+else:
+    app = Flask(__name__)
+    app.debug = True
 
 
 @app.route("/")
