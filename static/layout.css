@@ -1,80 +1,58 @@
-/* 8. CUSTOM LAYOUT & TYPOGRAPHY (Daddy bear)
-----------------------------------------------------------------------------------------*/
-#container {
-	padding: 1.618em;
-	margin: 0 auto; 
-	max-width: 60em;
-	}
-	
-header h2:before, header h2:after { width: 42%; }
+/*
+* Skeleton V1.2
+* Copyright 2011, Dave Gamache
+* www.getskeleton.com
+* Free to use under the MIT license.
+* http://www.opensource.org/licenses/mit-license.php
+* 6/20/2012
+*/
 
-h1 { font-size: 4.4em; line-height:1.618em; margin-bottom:0.1em; }
-    
-h1 span {
-  font-family: "proxima-nova-1","proxima-nova-2", arial, helvetica, sans-serif;
-  text-transform: uppercase;
-  letter-spacing:0.1em;
-  font-size:0.382em;
-  line-height:3.236em;
-  display:block;
-  }
-  
-h1 span:before, h1 span:after {
-  content:"";
-  border-top:1px solid #333;
-  height: 0.1em;
-  width: 19%;
-  display: block;
-  margin-top: 1.618em;
-  }
-  
-h1 span:before { float: left; }  
-h1 span:after { float: right; }
+/* Table of Content
+==================================================
+	#Site Styles
+	#Page Styles
+	#Media Queries
+	#Font-Face */
 
-ul { margin-left: 0.4em; }
-ol { margin-left: 0.4em; }
+/* #Site Styles
+================================================== */
 
-p.intro {
-  font-size: 1.618em;
-  line-height:1.4289em;
-  max-width: 20em;
-  margin-bottom: 1em;
-  }
+/* #Page Styles
+================================================== */
 
-aside {
-  float: right;
-  clear: right;
-  width: 25em;
-  margin-top:-7.5em;
-  height:auto;
-  }
-  
-footer p { max-width: 17.942em; }
+/* #Media Queries
+================================================== */
+
+	/* Smaller than standard 960 (devices and browsers) */
+	@media only screen and (max-width: 959px) {}
+
+	/* Tablet Portrait size to standard 960 (devices and browsers) */
+	@media only screen and (min-width: 768px) and (max-width: 959px) {}
+
+	/* All Mobile Sizes (devices and browser) */
+	@media only screen and (max-width: 767px) {}
+
+	/* Mobile Landscape Size to Tablet Portrait (devices and browsers) */
+	@media only screen and (min-width: 480px) and (max-width: 767px) {}
+
+	/* Mobile Portrait Size to Mobile Landscape Size (devices and browsers) */
+	@media only screen and (max-width: 479px) {}
 
 
-/* 9. CUSTOM LAYOUT & TYPOGRAPHY (Mummy bear)
-----------------------------------------------------------------------------------------*/
-@media screen and (min-width: 30em) and (max-width: 63.236em) {
+/* #Font-Face
+================================================== */
+/* 	This is the proper syntax for an @font-face file
+		Just create a "fonts" folder at the root,
+		copy your FontName into code below and remove
+		comment brackets */
 
-#container { width: 30em; }
-
-header h2:before, header h2:after { width: 35%; }
-
-h1 { font-size: 2.618em; line-height: 1.4em; }
-h1 span { font-size:0.5em; }
-h1 span:before, h1 span:after { width: 10%; }
-
-p.intro {
-  font-size: 1.309em;
-  margin-bottom: 1em;
-  max-width: 33em;
-  }
-  
-aside {
-  float: none;
-  width: auto;
-  height: auto;
-  margin: 0 0 2.2em;
-  }
-	
-}
+/*	@font-face {
+	    font-family: 'FontName';
+	    src: url('../fonts/FontName.eot');
+	    src: url('../fonts/FontName.eot?iefix') format('eot'),
+	         url('../fonts/FontName.woff') format('woff'),
+	         url('../fonts/FontName.ttf') format('truetype'),
+	         url('../fonts/FontName.svg#webfontZam02nTh') format('svg');
+	    font-weight: normal;
+	    font-style: normal; }
+*/

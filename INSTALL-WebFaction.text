@@ -23,3 +23,15 @@ scp -Br $AUM/templates/*  $REMOTE/smlaum/templates/*
 scp -B $AUM/*.py         $REMOTE/smlaum/lib/python2.7/*.py
 
 ssh calroc.webfactional.com '~/webapps/smlaum/apache2/bin/restart'
+
+
+export REMOTE=calroc.webfactional.com:/home/calroc/webapps
+export SRC=/home/sforman/Desktop/phoenixbureau/DendNet
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+scp -Br $SRC/static/* $REMOTE/dendrite_static_site/
+scp -Br $SRC/templates/* $REMOTE/smlaum/templates/
+scp -B $SRC/*.py $REMOTE/smlaum/lib/python2.7/
+
+/home/calroc/webapps/smlaum/templates/
