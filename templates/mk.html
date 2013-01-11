@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+svg {
+  border: 2px solid black;
+}
+ellipse.node {
+  stroke: gray;
+  stroke-width: 1.5px;
+}
+</style>
+<body>
+<script src="third-party/d3.v3/d3.v3.min.js"></script>
+<script>
+
+var width = 1500, height = 240;
+
+var df = new Date("Fri, 24 Jun 2005 19:21:23 -0700");
+var dt = new Date("Tue, 10 Jan 2006 22:37:21 -0500");
+
+var ts = d3.time.scale()
+    .domain([df, dt])
+    .range([23, width - 23]);
+
+var day_of_week = d3.time.format("%w");
+function time_of_day(d) {
+  var n = d.getHours()
+  n *= 60;
+  n += d.getMinutes();
+  n *= 60;
+  n += d.getSeconds();
+  return n;
+}
+
+var lum = d3.scale.linear()
+    .domain([0, 24 * 60 * 60]);
+
+var co = d3.scale.linear()
+    .domain([0, 8])
+    .range([0.0, 1.0]);
+
+var la = d3.interpolateRgb("red", "blue")
+
+var color = d3.time.scale()
+    .domain([df, dt])
+    .range([0.0, 1.0]);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height * 2);
+
+var g = svg.append("svg:g");
+
+var labys = g.selectAll('text')
+  .data(ts.ticks(23))
+.enter().append("text")
+  .attr("x", ts)
+  .attr("y", height)
+  .attr("transform", function(d) {
+      return "rotate(72 " + ts(d) + " " + height + ")";
+  })
+  .text(function(d) { return d.toLocaleDateString(); });
+
+
+
+var km = {};
+
+d3.json("mailcal.json", function(error, mails) {
+
+  var M = mails['mails'];
+  var C = mails['contacts'];
+
+  var contacts = svg.selectAll("circle")
+    .data(C)
+  .enter().append("circle")
+    .each(function(d, i) {
+      km[d] = {
+        col: d3.hsl(Math.random() * 360, 1, 0.5),
+        i: i
+      };
+    })
+
+  var node = g.selectAll("ellipse.node")
+    .data(M)
+  .enter().append("ellipse")
+    .each(function(d) { d.d = new Date(d['Date']); })
+    .attr("class", "node")
+    .attr("cx", width / 2)
+    .attr("cy", height * 2)
+    .attr("rx", 0.1)
+    .attr("ry", 0.1)
+    .each(function(d) {
+
+      var x = ts(d.d);
+//      var y = 23 + 23 * day_of_week(d.d) + km[d['From']].i;
+      var y = 23 + 3 * km[d['From']].i;
+
+      d3.select(this)
+      .transition()
+        .delay(function(d) { return Math.random() * 5000; })
+        .duration(function(d) { return 1500 + Math.random() * 4000; })
+//        .ease("bounce")
+        .attr("class", "node")
+        .attr("rx", 3)
+        .attr("ry", 10)
+        .attr("cx", x)
+        .attr("cy", y)
+
+//    .attr("transform", function(d) {
+//        return "rotate(72 " + x + " " + y + ")";
+//    })
+
+        .style("fill", function(d) {
+          return km[d['From']].col;
+//            var c = color(d.d);
+//            return d3.hsl(c * 360, 1, lum(time_of_day(d.d)));
+    //        return la();
+        });
+
+    });
+
+  node.append("title")
+    .text(function(d) { return d["Subject"]; });
+
+});
+
+</script>
+
