@@ -1,3 +1,4 @@
 *.py[co]
 virt-env
 build
+static/mailcal.json

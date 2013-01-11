@@ -23,7 +23,10 @@ def index():
 
 @app.route('/hello')
 def hello():
-    return "Hello World!"
+    return render_template(
+      'mk.html',
+      title='Eye Bleeding',
+      )
 
 
 if __name__ == "__main__":

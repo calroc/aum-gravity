@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<meta charset="utf-8">
+{% extends "kmk.html" %}
+{% block extra_head %}
 <style>
 svg {
   border: 2px solid black;
@@ -9,8 +9,15 @@ ellipse.node {
   stroke-width: 1.5px;
 }
 </style>
-<body>
-<script src="third-party/d3.v3/d3.v3.min.js"></script>
+{% endblock %}
+{% block script %}
+<script>
+
+</script>
+{% endblock %}
+{% block body %}
+
+
 <script>
 
 var width = 1500, height = 240;
@@ -61,11 +68,9 @@ var labys = g.selectAll('text')
   })
   .text(function(d) { return d.toLocaleDateString(); });
 
-
-
 var km = {};
 
-d3.json("mailcal.json", function(error, mails) {
+d3.json("/static/mailcal.json", function(error, mails) {
 
   var M = mails['mails'];
   var C = mails['contacts'];
@@ -123,6 +128,9 @@ d3.json("mailcal.json", function(error, mails) {
     .text(function(d) { return d["Subject"]; });
 
 });
-
 </script>
 
+
+
+
+{% endblock %}
