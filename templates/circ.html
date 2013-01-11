@@ -19,7 +19,9 @@ var ns = {
   df: new Date("Fri, 24 Jun 2005 19:21:23 -0700"),
   dt: new Date("Tue, 10 Jan 2006 22:37:21 -0500"),
   w: d3.scale.linear().range([marg, width - marg]),
-  h: d3.scale.linear().range([marg, height - marg])
+  h: d3.scale.linear().range([marg, height - marg]),
+  day: d3.scale.linear().domain([0, 24 * 60 * 60]),
+  rad: d3.scale.linear().range([0, 6.283185307179586]),
 }
 
 function make_ts() {
@@ -34,26 +36,17 @@ function t2h(d) { return ns.h(ns.ts(d)); }
 var day_of_week = d3.time.format("%w");
 
 function time_of_day(d) {
-  var n = d.getHours()
-  n *= 60;
-  n += d.getMinutes();
-  n *= 60;
-  n += d.getSeconds();
-  return n;
+  return (d.getHours() * 60 + d.getMinutes()) * 60 + d.getSeconds();
 }
 
-var lum = d3.scale.linear()
-    .domain([0, 24 * 60 * 60]);
-
-var co = d3.scale.linear()
-    .domain([0, 8])
-    .range([0.0, 1.0]);
-
-var la = d3.interpolateRgb("red", "blue")
-
-var color = d3.time.scale()
-    .domain([ns.df, ns.dt])
-    .range([0.0, 1.0]);
+function dayish(d) { return ns.day(time_of_day(d)); }
+function monthish(d) {
+  var w = 365.25 / 12;
+  var secs_per_day = 24 * 60 * 60;
+  var secs_per_month = w * secs_per_day;
+  var secs = d.valueOf() / 1000;
+  return secs % secs_per_month / secs_per_month;
+}
 
 var km = {};
 
@@ -95,15 +88,20 @@ d3.json("/static/mailcal.json", function(error, mails) {
   .enter().append("ellipse")
     .each(function(d) { d.d = new Date(d['Date']); })
     .attr("class", "node")
-    .attr("cx", width / 2)
-    .attr("cy", height * 2)
+    .attr("cx", 0)
+    .attr("cy", height)
     .attr("rx", 0.1)
     .attr("ry", 0.1)
     .each(function(d) {
 
-      var x = t2w(d.d);
+      var angle = ns.rad(monthish(d.d));
+      var siny = Math.sin(angle);
+      var cosy = Math.cos(angle);
+
+      var x = t2w(d.d); //+ km[d['From']].i % 7 * siny * marg;
+// + siny * marg * 2;
 //      var y = 23 + 23 * day_of_week(d.d) + km[d['From']].i;
-      var y = 23 + 3 * km[d['From']].i;
+      var y = height + cosy * height * 0.7 + km[d['From']].i - 100;
 
       d3.select(this)
       .transition()
