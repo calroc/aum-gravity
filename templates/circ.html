@@ -13,14 +13,23 @@ ellipse.node {
 {% block script %}
 <script>
 
-var width = 1500, height = 240;
+var width = 1500, height = 240, marg = 23;
 
-var df = new Date("Fri, 24 Jun 2005 19:21:23 -0700");
-var dt = new Date("Tue, 10 Jan 2006 22:37:21 -0500");
+var ns = {
+  df: new Date("Fri, 24 Jun 2005 19:21:23 -0700"),
+  dt: new Date("Tue, 10 Jan 2006 22:37:21 -0500"),
+  w: d3.scale.linear().range([marg, width - marg]),
+  h: d3.scale.linear().range([marg, height - marg])
+}
 
-var ts = d3.time.scale()
-    .domain([df, dt])
-    .range([23, width - 23]);
+function make_ts() {
+  return d3.time.scale().domain([ns.df, ns.dt]);
+}
+
+ns.ts = make_ts();
+
+function t2w(d) { return ns.w(ns.ts(d)); }
+function t2h(d) { return ns.h(ns.ts(d)); }
 
 var day_of_week = d3.time.format("%w");
 
@@ -43,7 +52,7 @@ var co = d3.scale.linear()
 var la = d3.interpolateRgb("red", "blue")
 
 var color = d3.time.scale()
-    .domain([df, dt])
+    .domain([ns.df, ns.dt])
     .range([0.0, 1.0]);
 
 var km = {};
@@ -57,12 +66,12 @@ var svg = d3.select("body").append("svg")
 var g = svg.append("svg:g");
 
 var labys = g.selectAll('text')
-  .data(ts.ticks(23))
+  .data(ns.ts.ticks(23))
 .enter().append("text")
-  .attr("x", ts)
+  .attr("x", t2w)
   .attr("y", height)
   .attr("transform", function(d) {
-      return "rotate(72 " + ts(d) + " " + height + ")";
+      return "rotate(72 " + t2w(d) + " " + height + ")";
   })
   .text(function(d) { return d.toLocaleDateString(); });
 
@@ -92,7 +101,7 @@ d3.json("/static/mailcal.json", function(error, mails) {
     .attr("ry", 0.1)
     .each(function(d) {
 
-      var x = ts(d.d);
+      var x = t2w(d.d);
 //      var y = 23 + 23 * day_of_week(d.d) + km[d['From']].i;
       var y = 23 + 3 * km[d['From']].i;
 

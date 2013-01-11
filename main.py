@@ -29,5 +29,13 @@ def hello():
       )
 
 
+@app.route('/circ')
+def circ():
+    return render_template(
+      'circ.html',
+      title='Circ',
+      )
+
+
 if __name__ == "__main__":
     app.run(debug=True)
