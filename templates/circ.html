@@ -22,6 +22,7 @@ var ns = {
   h: d3.scale.linear().range([marg, height - marg]),
   day: d3.scale.linear().domain([0, 24 * 60 * 60]),
   rad: d3.scale.linear().range([0, 6.283185307179586]),
+  toggle: false,
 }
 
 function make_ts() {
@@ -98,39 +99,47 @@ d3.json("/static/mailcal.json", function(error, mails) {
       var siny = Math.sin(angle);
       var cosy = Math.cos(angle);
 
-      var x = t2w(d.d); //+ km[d['From']].i % 7 * siny * marg;
-// + siny * marg * 2;
-//      var y = 23 + 23 * day_of_week(d.d) + km[d['From']].i;
-      var y = height + cosy * height * 0.7 + km[d['From']].i - 100;
+      var x = t2w(d.d) - siny * marg ; // * (0.5 - ns.ts(d.d));
+      var y = height + cosy * height * 0.7;
 
       d3.select(this)
       .transition()
-        .delay(function(d) { return Math.random() * 5000; })
-        .duration(function(d) { return 1500 + Math.random() * 4000; })
-//        .ease("bounce")
+        .delay(function(d) { return Math.random() * 1000; })
+        .duration(function(d) { return 500 + Math.random() * 2000; })
         .attr("class", "node")
         .attr("rx", 3)
         .attr("ry", 10)
         .attr("cx", x)
         .attr("cy", y)
-
-//    .attr("transform", function(d) {
-//        return "rotate(72 " + x + " " + y + ")";
-//    })
-
         .style("fill", function(d) {
           return km[d['From']].col;
-//            var c = color(d.d);
-//            return d3.hsl(c * 360, 1, lum(time_of_day(d.d)));
-    //        return la();
         });
 
     });
 
-  node.append("title")
-    .text(function(d) { return d["Subject"]; });
+  node.append("title").text(function(d) { return d["Subject"]; });
 
-  });
+});
+
+
+function aaaa() {
+  svg.selectAll("ellipse").transition()
+    .duration(1500)
+    .attr("cx", function(d) {
+      var angle = ns.rad(monthish(d.d));
+      return t2w(d.d) + Math.sin(angle) * marg;
+    });
+}
+function bbbb() {
+  svg.selectAll("ellipse").transition()
+    .duration(1500)
+    .attr("cx", function(d) {
+      var angle = ns.rad(monthish(d.d));
+      return t2w(d.d) - Math.sin(angle) * marg;
+    });
+}
+
+  $("body").toggle(aaaa, bbbb);
 });
 </script>
 {% endblock %}
