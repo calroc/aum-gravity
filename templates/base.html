@@ -3,21 +3,21 @@
 <!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
 <!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
 <!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
-<head>
+<head>{#
 
-	<!-- Basic Page Needs
-  ================================================== -->
+	 Basic Page Needs
+  ================================================== #}
 	<meta charset="utf-8">
         <title>{{ title }}</title>
 	<meta name="description" content="">
-	<meta name="author" content="">
+	<meta name="author" content="">{#
 
-	<!-- Mobile Specific Metas
-  ================================================== -->
-	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	 Mobile Specific Metas
+  ================================================== #}
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">{#
 
-	<!-- CSS
-  ================================================== -->
+	 CSS
+  ================================================== #}
 	<link rel="stylesheet" href="static/base.css">
 	<link rel="stylesheet" href="static/skeleton.css">
 	<link rel="stylesheet" href="static/layout.css">
@@ -25,9 +25,9 @@
 	<!--[if lt IE 9]>
 		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
 	<![endif]-->
-
-	<!-- Favicons
-	================================================== -->
+{#
+	 Favicons
+	================================================== #}
 	<link rel="shortcut icon" href="static/favicon.ico">
 	<link rel="apple-touch-icon" href="static/apple-touch-icon.png">
 	<link rel="apple-touch-icon" sizes="72x72" href="static/apple-touch-icon-72x72.png">
@@ -35,40 +35,48 @@
 	<style> html body { background: rgb(244, 144, 244); } </style>
   <script src="/static/d3.v3.js"></script>
   <script src="/static/underscore.js"></script>
-
+{% block extra_head %}{% endblock %}
 </head>
 <body>
+{#
 
+	Primary Page Layout
+	==================================================
 
+	Delete everything in this .container and get started on your own site!
 
-	<!-- Primary Page Layout
-	================================================== -->
-
-	<!-- Delete everything in this .container and get started on your own site! -->
-
+#}
 	<div class="container">
 		<div class="sixteen columns">
+{% block header %}
 			<h1 class="remove-bottom" style="margin-top: 40px">Doing Science</h1>
 			<h5>to All the Things</h5>
 			<hr />
+{% endblock %}
 		</div>
 		<div class="one-third column">
+{% block left %}
 			<h3>{{ title }}</h3>
 			<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+{% endblock %}
 		</div>
 		<div class="one-third column">
+{% block center %}
 			<h3>Hello.</h3>
 			<img class="scale-with-grid" src="/static/star-cat.jpg" alt="" />
+{% endblock %}
 		</div>
 		<div class="one-third column">
+{% block right %}
 			<h3>Hello.</h3>
 			<p><a href="{{ hello_url }}">hello!</a> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+{% endblock %}
 		</div>
 
-	</div><!-- container -->
+	</div>{# container
 
 
-<!-- End Document
-================================================== -->
+ End Document
+================================================== #}
 </body>
 </html>
