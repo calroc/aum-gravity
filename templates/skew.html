@@ -13,11 +13,12 @@ ellipse.node {
 {% block script %}
 <script>
 
-var DATA = _.range(1, 24)
+var DATA = _.range(24)
 var width = 1500, height = 240, marg = 23;
-var w = d3.scale.linear().domain([0, 24]).range([marg, width - marg]);
-var rad = d3.scale.linear().domain([1, 23]).range([0.0, 6.283185307179586]);
-var deg = d3.scale.linear().domain([1, 23]).range([0.0, 360.0]);
+var k = d3.scale.linear().domain([0, 23]);
+var w = d3.scale.linear().domain([-1, 24]).range([marg, width - marg]);
+var rad = d3.scale.linear().domain([0, 23]).range([0.0, 6.283185307179586]);
+var deg = d3.scale.linear().domain([0, 23]).range([0.0, 360.0]);
 
 $(function() {
 
@@ -33,13 +34,54 @@ $(function() {
 
   var svg = d3.select("svg");
   var g = svg.append("svg:g");
-  var cs = g.selectAll("circle")
+
+  var cs = g.selectAll("g.hole")
       .data(DATA)
-    .enter().append("circle")
+    .enter().append("svg:g")
+      .attr("class", "hole")
+    .append("svg:circle")
       .attr("cx", w)
       .attr("cy", height)
       .attr("r", 15)
+      .style("fill", function(d) { return d3.hsl(deg(d), 1, 0.75); })
+
+  function hic() {
+    cs.transition()
+      .duration(1500)
+      .attr("cx", function(d) { return width / 2 + 130 * Math.sin(rad(d)); })
+      .attr("cy", function(d) { return height + 130 * Math.cos(rad(d)); })
       ;
+    return false;
+  }
+
+  function cih() {
+    cs.transition()
+      .duration(1500)
+      .attr("cx", w)
+      .attr("cy", height)
+      ;
+    return false;
+  }
+
+  function sky() {
+    cs.transition()
+      .duration(2000)
+      .attr("transform", function(d) {
+        return "skewX(" + 90 * k(d) + ")";
+      });
+    return false;
+  }
+
+  function zoomout() {
+    cs.transition()
+      .duration(1000)
+      .attr("transform", "");
+    return false;
+  }
+
+  $("#zoom").toggle(hic, cih);
+
+  $("#clickit").toggle(sky, zoomout)
 
 });
 </script>
