@@ -17,7 +17,7 @@ circle {
 //  Global namespace.
 //#######################################################################
 
-var width = 1500, height = 240, marg = 23;
+var width = 1500, height = 240, marg = 23, half_width = width / 2;
 var DATA = _.map(_.range(24), function (d) {
   return {
     d: d,
@@ -30,6 +30,7 @@ var k = d3.scale.linear().domain([0, 23]);
 var w = d3.scale.linear().domain([-1, 24]).range([marg, width - marg]);
 var rad = d3.scale.linear().domain([0, 24]).range([0.0, 6.283185307179586]);
 var deg = d3.scale.linear().domain([0, 24]).range([0.0, 360.0]);
+var j = d3.scale.pow().exponent(5).domain([0.0, 1.0]).range([0, 70])
 
 var ns = {
   skewx: 0,
@@ -86,10 +87,13 @@ $(function() {
     .append("svg:rect")
       .attr("width", 30)
       .attr("height", 30 * 1.618)
+      .attr("rx", 3)
+      .attr("ry", 3)
       .attr("stroke", function(d) {
         return d3.hsl((180.0 + deg(d.d)) % 360.0, 1, 0.5);
       })
       .style("fill", function(d) { return d3.hsl(deg(d.d), 1, 0.75); })
+      .attr("transform", "translate(-15 0)")
 
   var holes = g.selectAll("g.hole");
   var lep = g.selectAll("g.lep");
@@ -103,7 +107,8 @@ $(function() {
   lep.append("text")
 //    .attr("text-anchor", "middle")
 //    .attr("alignment-baseline", "before-edge")
-      .attr("y", 15)
+      .attr("y", 17)
+      .attr("x", -12)
     .text(function(d) { return "" + d.d; })
     .style("fill", function(d) {
       return d3.hsl((180.0 + deg(d.d)) % 360.0, 1, 0.5);
@@ -121,17 +126,20 @@ $(function() {
       .duration(1000)
       .attr("transform", function(d) {
 
-        var dist = Math.sqrt(Math.pow(d.x - (width / 2), 2)
-                           + Math.pow(d.y - height, 2));
-        dist = dist / (width / 2);
+        var dy = Math.abs(d.y - height);
+        var dx = Math.abs(d.x - half_width);
+        var x_scale = dx / half_width;
+        var y_scale = dy / height;
 
-        var x = (d.x > (width / 2));
+        var skewy = j(x_scale);
+
+        // Figure out which quadrant we're in.
+        var x = (d.x > half_width);
         var y = (d.y < height);
 
-        var j = ((x && y) || (!x && !y)) ? -ns.skewx : ns.skewx;
-        j *= dist;
+        skewy = ((x && y) || (!x && !y)) ? -skewy : skewy;
 
-        return "skewY(" + j + ") skewX(" + j + ")";
+        return "scale(" + (1-x_scale) + " 1) skewY(" + skewy + ")";
       });
     return false;
   }
@@ -145,14 +153,15 @@ $(function() {
   function zoomouty() {
     lep.transition()
       .duration(1000)
-      .attr("transform", "skewY(0) skewX(0)");
+      .attr("transform", "scale(1 1) skewY(0) skewX(0)");
     return false;
   }
 
 //#######################################################################
 //  Set up the controls.
 //#######################################################################
-  $("#clickit").click(zoomouty)
+  $("#clickit").click(zoomouty);
+  $("#clackit").click(sky);
 
   $("#slider0").slider({
     min: -89,
@@ -188,6 +197,8 @@ $(function() {
 <div id="container">
 <svg id="pony" width="1500" height="480" viewBox="0 0 1500 480" perserveAspectRatio="xMidYMid"></svg>
 <a href="#" id="clickit">unskew</a>
+<br>
+<a href="#" id="clackit">clack</a>
 <br>
 
 <div id="slider0"></div><br>
