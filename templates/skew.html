@@ -4,8 +4,7 @@
 svg {
   border: 2px solid black;
 }
-ellipse.node {
-  stroke: gray;
+circle {
   stroke-width: 1.5px;
 }
 </style>
@@ -17,8 +16,8 @@ var DATA = _.range(24)
 var width = 1500, height = 240, marg = 23;
 var k = d3.scale.linear().domain([0, 23]);
 var w = d3.scale.linear().domain([-1, 24]).range([marg, width - marg]);
-var rad = d3.scale.linear().domain([0, 23]).range([0.0, 6.283185307179586]);
-var deg = d3.scale.linear().domain([0, 23]).range([0.0, 360.0]);
+var rad = d3.scale.linear().domain([0, 24]).range([0.0, 6.283185307179586]);
+var deg = d3.scale.linear().domain([0, 24]).range([0.0, 360.0]);
 
 $(function() {
 
@@ -42,11 +41,29 @@ $(function() {
       .attr("transform", function(d) {
         return "translate(" + w(d) + " " + height + ")";
       })
+    .append("svg:g")
+      .attr("class", "lep")
     .append("svg:circle")
       .attr("r", 15)
+      .attr("stroke", function(d) {
+        return d3.hsl((180.0 + deg(d)) % 360.0, 1, 0.5);
+      })
       .style("fill", function(d) { return d3.hsl(deg(d), 1, 0.75); })
 
   var holes = g.selectAll("g.hole");
+  var lep = g.selectAll("g.lep");
+
+  lep.append("text")
+    .attr("text-anchor", "middle")
+    .attr("alignment-baseline", "middle")
+    .attr("transform", function(d) {
+        return "rotate(" + deg(d) + ")";
+    })
+    .text(function(d) { return "" + d; })
+    .style("fill", function(d) {
+      return d3.hsl((180.0 + deg(d)) % 360.0, 1, 0.5);
+    })
+    ;
 
   function hic() {
     holes.transition()
@@ -71,7 +88,7 @@ $(function() {
   }
 
   function skx() {
-    cs.transition()
+    lep.transition()
       .duration(2000)
       .attr("transform", function(d) {
         return "skewX(" + 90 * k(d) + ")";
@@ -80,14 +97,14 @@ $(function() {
   }
 
   function zoomoutx() {
-    cs.transition()
+    lep.transition()
       .duration(1000)
       .attr("transform", "skewX(0)");
     return false;
   }
 
   function sky() {
-    cs.transition()
+    lep.transition()
       .duration(2000)
       .attr("transform", function(d) {
         return "skewY(" + 90 * k(d) + ") skewX(" + 90 * k(d) + ")";
@@ -96,7 +113,7 @@ $(function() {
   }
 
   function zoomouty() {
-    cs.transition()
+    lep.transition()
       .duration(1000)
       .attr("transform", "skewY(0)");
     return false;

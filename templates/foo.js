@@ -7,7 +7,12 @@
     .style("fill", function(d) { return d3.hsl(deg(d), 1, 0.75); })
     ;
 
-
+c.enter().append("svg:circle")
+    .attr("cx", w)
+    .attr("cy", height)
+    .attr("r", 15)
+    .style("fill", function(d) { return d3.hsl(deg(d), 1, 0.75); })
+    ;
 
 
 var labys = g.selectAll('text')
