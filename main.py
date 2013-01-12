@@ -37,5 +37,13 @@ def circ():
       )
 
 
+@app.route('/skew')
+def skew():
+    return render_template(
+      'skew.html',
+      title='Skew',
+      )
+
+
 if __name__ == "__main__":
     app.run(debug=True)
