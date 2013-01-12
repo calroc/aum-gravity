@@ -18,6 +18,11 @@ var k = d3.scale.linear().domain([0, 23]);
 var w = d3.scale.linear().domain([-1, 24]).range([marg, width - marg]);
 var rad = d3.scale.linear().domain([0, 24]).range([0.0, 6.283185307179586]);
 var deg = d3.scale.linear().domain([0, 24]).range([0.0, 360.0]);
+var ns = {
+  skewx: 0,
+  skewy: 0,
+};
+
 
 $(function() {
 
@@ -56,9 +61,9 @@ $(function() {
   lep.append("text")
     .attr("text-anchor", "middle")
     .attr("alignment-baseline", "middle")
-    .attr("transform", function(d) {
-        return "rotate(" + deg(d) + ")";
-    })
+//    .attr("transform", function(d) {
+//        return "rotate(" + deg(d) + ")";
+//    })
     .text(function(d) { return "" + d; })
     .style("fill", function(d) {
       return d3.hsl((180.0 + deg(d)) % 360.0, 1, 0.5);
@@ -91,7 +96,8 @@ $(function() {
     lep.transition()
       .duration(2000)
       .attr("transform", function(d) {
-        return "skewX(" + 90 * k(d) + ")";
+        return "skewX(" + (ns.skewx * k(d)) + ")";
+  //      return "rotate(" + 30 * k(d) + ") skewX(" + 90 * k(d) + ")";
       });
     return false;
   }
@@ -99,30 +105,57 @@ $(function() {
   function zoomoutx() {
     lep.transition()
       .duration(1000)
-      .attr("transform", "skewX(0)");
+      .attr("transform", "rotate(0) skewY(0) skewX(0)");
     return false;
   }
 
   function sky() {
     lep.transition()
-      .duration(2000)
+      .duration(1000)
       .attr("transform", function(d) {
-        return "skewY(" + 90 * k(d) + ") skewX(" + 90 * k(d) + ")";
+        return "skewY(" + ns.skewy * k(d) + ") skewX(" + (ns.skewx * k(d)) + ")";
       });
     return false;
   }
+  var lazysky = _.debounce(sky, 250);
 
   function zoomouty() {
     lep.transition()
       .duration(1000)
-      .attr("transform", "skewY(0)");
+      .attr("transform", "skewY(0) skewX(0)");
     return false;
   }
 
   $("#zoom").toggle(hic, cih);
 
-  $("#clickit").toggle(skx, zoomoutx)
-  $("#clickity").toggle(sky, zoomouty)
+  $("#clickit").click(zoomouty)
+  $("#clickity").click(sky)
+
+  $("#slider0").slider({
+    min: -89,
+    max: 89,
+    slide: function(event, ui) {
+      ns.skewx = $(this).slider("value");
+      lazysky();
+    },
+  });
+  $("#slider1").slider({
+    min: -89,
+    max: 89,
+    slide: function(event, ui) {
+      ns.skewy = $(this).slider("value");
+      lazysky();
+    },
+  });
+  $("#slider2").slider({
+    min: -89,
+    max: 89,
+    slide: function(event, ui) {
+      ns.skewx = $(this).slider("value");
+      ns.skewy = $(this).slider("value");
+      lazysky();
+    },
+  });
 
 });
 </script>
@@ -132,7 +165,16 @@ $(function() {
 <div id="container">
 <svg id="pony" width="1500" height="480" viewBox="0 0 1500 480" perserveAspectRatio="xMidYMid"></svg>
 <a href="#" id="zoom">circle up</a>
-<a href="#" id="clickit">skew X</a>
-<a href="#" id="clickity">skew X and Y</a>
+<a href="#" id="clickit">unskew</a>
+<a href="#" id="clickity">skew</a>
+<br>
+
+<div id="slider0"></div>
+<br>
+<div id="slider1"></div>
+<br>
+<div id="slider2"></div>
+
+
 </div>
 {% endblock %}
