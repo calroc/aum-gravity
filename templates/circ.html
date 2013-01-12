@@ -59,9 +59,20 @@ var km = {};
 
 $(function() {
 
-var svg = d3.select("body").append("svg")
-    .attr("width", width)
-    .attr("height", height * 2);
+var the_svg = $("#pony");
+var aspect = the_svg.width() / the_svg.height();
+
+$(window).on("resize", function() {
+  var the_svg = $("#pony");
+  var container = $("#container");
+  var targetWidth = container.width();
+  the_svg.attr("width", targetWidth);
+  the_svg.attr("height", Math.round(targetWidth / aspect));
+}).trigger("resize");
+
+var svg = d3.select("svg");
+//    .attr("width", width)
+//    .attr("height", height * 2);
 
 var g = svg.append("svg:g");
 
@@ -169,10 +180,41 @@ function bbbb() {
     });
 }
 
-  $("body").toggle(aaaa, bbbb);
+function zoomin() {
+  g.transition()
+    .duration(1000)
+    .attr("transform", function(d) {
+      var scale_factor = 0.68;
+      var x = width * scale_factor / 4;
+      var y = height * scale_factor / 2;
+      return "translate(" + x + " " + y + ") scale(" + scale_factor + ")";
+    });
+  return False;
+}
+
+function zoomout() {
+  g.transition()
+    .duration(1000)
+    .attr("transform", "translate(0 0) scale(1.0)");
+  return False;
+}
+
+  $("#zoom").toggle(zoomin, zoomout);
+
+  $("#clickit").toggle(aaaa, bbbb);
+
 });
 </script>
 {% endblock %}
 {% block body %}
 <h1>Hi There!</h1>
+<div id="container">
+  <svg id="pony" width="1500" height="580" viewBox="0 0 1500 580" perserveAspectRatio="xMidYMid">
+  </svg>
+
+<a href="#" id="zoom">zoom</a>
+
+<a href="#" id="clickit">clickit</a>
+
+</div>
 {% endblock %}
