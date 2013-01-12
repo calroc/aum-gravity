@@ -12,20 +12,39 @@ circle {
 {% block script %}
 <script>
 
-var DATA = _.range(24)
+
+//#######################################################################
+//  Global namespace.
+//#######################################################################
+
 var width = 1500, height = 240, marg = 23;
+var DATA = _.map(_.range(24), function (d) {
+  return {
+    d: d,
+    x: Math.random() * width,
+    y: Math.random() * height * 2,
+  };
+})
+
 var k = d3.scale.linear().domain([0, 23]);
 var w = d3.scale.linear().domain([-1, 24]).range([marg, width - marg]);
 var rad = d3.scale.linear().domain([0, 24]).range([0.0, 6.283185307179586]);
 var deg = d3.scale.linear().domain([0, 24]).range([0.0, 360.0]);
+
 var ns = {
   skewx: 0,
   skewy: 0,
 };
 
 
+
+
 $(function() {
 
+
+//#######################################################################
+//  Set up the viewBox and resizing.
+//#######################################################################
   var the_svg = $("#pony");
   var aspect = the_svg.width() / the_svg.height();
   $(window).on("resize", function() {
@@ -36,89 +55,93 @@ $(function() {
     the_svg.attr("height", Math.round(targetWidth / aspect));
   }).trigger("resize");
 
+
+//#######################################################################
+//  Create the main group.
+//#######################################################################
   var svg = d3.select("svg");
   var g = svg.append("svg:g");
 
+
+//#######################################################################
+//  Each data element gets two groups and a rectangle:
+//
+//      "hole" for translation
+//
+//      "lep" for skew
+//
+//#######################################################################
   var cs = g.selectAll("g.hole")
-      .data(DATA)
+    .data(DATA)
+
     .enter().append("svg:g")
       .attr("class", "hole")
       .attr("transform", function(d) {
-        return "translate(" + w(d) + " " + height + ")";
+        return "translate(" + d.x + " " + d.y + ")";
       })
+
     .append("svg:g")
       .attr("class", "lep")
-    .append("svg:circle")
-      .attr("r", 15)
+
+    .append("svg:rect")
+      .attr("width", 30)
+      .attr("height", 30 * 1.618)
       .attr("stroke", function(d) {
-        return d3.hsl((180.0 + deg(d)) % 360.0, 1, 0.5);
+        return d3.hsl((180.0 + deg(d.d)) % 360.0, 1, 0.5);
       })
-      .style("fill", function(d) { return d3.hsl(deg(d), 1, 0.75); })
+      .style("fill", function(d) { return d3.hsl(deg(d.d), 1, 0.75); })
 
   var holes = g.selectAll("g.hole");
   var lep = g.selectAll("g.lep");
 
+
+//#######################################################################
+//  Create some nice labels.
+//
+//  These are inside the skew group so they pick it up, skewed text is so 2013.
+//#######################################################################
   lep.append("text")
-    .attr("text-anchor", "middle")
-    .attr("alignment-baseline", "middle")
-//    .attr("transform", function(d) {
-//        return "rotate(" + deg(d) + ")";
-//    })
-    .text(function(d) { return "" + d; })
+//    .attr("text-anchor", "middle")
+//    .attr("alignment-baseline", "before-edge")
+      .attr("y", 15)
+    .text(function(d) { return "" + d.d; })
     .style("fill", function(d) {
-      return d3.hsl((180.0 + deg(d)) % 360.0, 1, 0.5);
+      return d3.hsl((180.0 + deg(d.d)) % 360.0, 1, 0.5);
     })
     ;
 
-  function hic() {
-    holes.transition()
-      .duration(1500)
-      .attr("transform", function(d) {
-        var x = width / 2 + 130 * Math.sin(rad(d));
-        var y = height + 130 * Math.cos(rad(d));
-        return "translate(" + x + " " + y + ")";
-      })
-      ;
-    return false;
-  }
 
-  function cih() {
-    holes.transition()
-      .duration(1500)
-      .attr("transform", function(d) {
-        return "translate(" + w(d) + " " + height + ")";
-      })
-      ;
-    return false;
-  }
-
-  function skx() {
-    lep.transition()
-      .duration(2000)
-      .attr("transform", function(d) {
-        return "skewX(" + (ns.skewx * k(d)) + ")";
-  //      return "rotate(" + 30 * k(d) + ") skewX(" + 90 * k(d) + ")";
-      });
-    return false;
-  }
-
-  function zoomoutx() {
-    lep.transition()
-      .duration(1000)
-      .attr("transform", "rotate(0) skewY(0) skewX(0)");
-    return false;
-  }
-
+//#######################################################################
+//  Adjust the skew.
+//
+//  These are inside the skew group so they pick it up, skewed text is so 2013.
+//#######################################################################
   function sky() {
     lep.transition()
       .duration(1000)
       .attr("transform", function(d) {
-        return "skewY(" + ns.skewy * k(d) + ") skewX(" + (ns.skewx * k(d)) + ")";
+
+        var dist = Math.sqrt(Math.pow(d.x - (width / 2), 2)
+                           + Math.pow(d.y - height, 2));
+        dist = dist / (width / 2);
+
+        var x = (d.x > (width / 2));
+        var y = (d.y < height);
+
+        var j = ((x && y) || (!x && !y)) ? -ns.skewx : ns.skewx;
+        j *= dist;
+
+        return "skewY(" + j + ") skewX(" + j + ")";
       });
     return false;
   }
+
   var lazysky = _.debounce(sky, 250);
 
+
+//#######################################################################
+//  Reset the skew.
+//#######################################################################
   function zoomouty() {
     lep.transition()
       .duration(1000)
@@ -126,10 +149,10 @@ $(function() {
     return false;
   }
 
-  $("#zoom").toggle(hic, cih);
-
+//#######################################################################
+//  Set up the controls.
+//#######################################################################
   $("#clickit").click(zoomouty)
-  $("#clickity").click(sky)
 
   $("#slider0").slider({
     min: -89,
@@ -164,15 +187,11 @@ $(function() {
 <h1>Hi There!</h1>
 <div id="container">
 <svg id="pony" width="1500" height="480" viewBox="0 0 1500 480" perserveAspectRatio="xMidYMid"></svg>
-<a href="#" id="zoom">circle up</a>
 <a href="#" id="clickit">unskew</a>
-<a href="#" id="clickity">skew</a>
 <br>
 
-<div id="slider0"></div>
-<br>
-<div id="slider1"></div>
-<br>
+<div id="slider0"></div><br>
+<div id="slider1"></div><br>
 <div id="slider2"></div>
 
 
