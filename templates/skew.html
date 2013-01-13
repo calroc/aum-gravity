@@ -3,6 +3,7 @@
 <style>
 svg {
   border: 1px solid blue;
+  margin-bottom: 1em;
 }
 circle {
   stroke-width: 1.5px;
@@ -11,6 +12,12 @@ rect.fram {
   stroke-width: 1.5px;
   stroke: pink;
   fill: none;
+}
+#slider0 {
+  margin-bottom: 1em;
+}
+.cntls {
+  display: inline-block;
 }
 </style>
 {% endblock %}
@@ -46,6 +53,8 @@ var j = d3.scale.pow().exponent(5).domain([0.0, 1.0]).range([0, 70])
 var ns = {
   skewx: 0,
   skewy: 0,
+  huex: 0,
+  phase0: 180.0,
 };
 
 
@@ -135,32 +144,33 @@ $(function() {
     lep.transition()
       .duration(1000)
       .attr("transform", function(d) {
-
-        var dy = Math.abs(d.y - half_height);
-        var dx = Math.abs(d.x - half_width);
-        var x_scale = dx / half_width;
-        var y_scale = dy / half_height;
-
-        var skewy = j(x_scale);
-
-        // Figure out which quadrant we're in.
-        var x = (d.x > half_width);
-        var y = (d.y < half_height);
-
-        skewy = ((x && y) || (!x && !y)) ? -skewy : skewy;
-
-        return "scale(" + (1-x_scale) + " 1) skewY(" + skewy + ")";
+        var z = compute_skew(d.x, d.y)
+        return "scale(" + (1-z[0]) + " 1) skewY(" + z[1] + ")";
       });
     return false;
   }
 
   var lazysky = _.debounce(sky, 250);
 
+  function compute_skew(x, y) {
+    var dx = Math.abs(x - half_width);
+    var dy = Math.abs(y - half_height);
+    var x_scale = dx / half_width;
+    var skewy = j(x_scale);
+
+    // Figure out which quadrant we're in.
+    var xq = (x > half_width);
+    var yq = (y < half_height);
+    skewy = ((xq && yq) || (!xq && !yq)) ? -skewy : skewy;
+
+    return [x_scale, skewy];
+  }
+
 
 //#######################################################################
 //  Reset the skew.
 //#######################################################################
-  function zoomouty() {
+  function reset_skew() {
     lep.transition()
       .duration(1000)
       .attr("transform", "scale(1 1) skewY(0) skewX(0)");
@@ -177,7 +187,7 @@ $(function() {
       .attr("transform", function(d) {
         return "translate(" + w(d.d) + " " + half_height + ")";
       })
-    zoomouty();
+    reset_skew();
     return false;
   }
 
@@ -203,7 +213,7 @@ $(function() {
         var y = Math.cos(rad(d.d)) * 133 + half_height;
         return "translate(" + x + " " + y + ") rotate(" + (-deg(d.d)) + ")";
       })
-    zoomouty();
+    reset_skew();
     return false;
   }
 
@@ -232,39 +242,68 @@ function zoomout() {
 
 
 //#######################################################################
+//  Fun with colors!
+//#######################################################################
+function hueish() {
+  lep.selectAll("rect").transition()
+    .duration(15)
+    .attr("stroke", function(d) {
+      var h = ns.phase0 + ns.huex + deg(d.d);
+      return d3.hsl(h % 360.0, 1, 0.5);
+    })
+    .style("fill", function(d) {
+      var h = ns.huex + deg(d.d);
+      return d3.hsl(h % 360.0, 1, 0.75);
+    })
+    ;
+  lep.selectAll("text").transition()
+    .duration(1000)
+    .style("fill", function(d) {
+      var h = ns.phase0 + ns.huex + deg(d.d);
+      return d3.hsl(h % 360.0, 1, 0.75);
+    })
+    ;
+}
+
+
+//#######################################################################
 //  Set up the controls.
 //#######################################################################
 
   $("#skew_controls").buttonset();
-  $("#clickit").click(zoomouty);
+  $("#clickit").click(reset_skew);
   $("#clackit").click(sky);
+
   $("#zoom").button().toggle(zoomin, zoomout);
-  $("#aligny").button().toggle(aligned_em, loc_em);
-  $("#circy").button().toggle(circ_em, loc_em);
+
+  $("#align_controls").buttonset();
+  $("#aligny").click(aligned_em);
+  $("#circy").click(circ_em);
+  $("#resety").click(loc_em);
 
   $("#slider0").slider({
-    min: -89,
-    max: 89,
+    min: 0,
+    max: 359,
     slide: function(event, ui) {
-      ns.skewx = $(this).slider("value");
-      lazysky();
+      ns.huex = $(this).slider("value");
+      hueish();
+    },
+    change: function(event, ui) {
+      ns.huex = $(this).slider("value");
+      hueish();
     },
   });
   $("#slider1").slider({
-    min: -89,
-    max: 89,
+    min: 0,
+    max: 359,
+    value: ns.phase0,
     slide: function(event, ui) {
-      ns.skewy = $(this).slider("value");
-      lazysky();
+      ns.phase0 = $(this).slider("value");
+      hueish();
     },
-  });
-  $("#slider2").slider({
-    min: -89,
-    max: 89,
-    slide: function(event, ui) {
-      ns.skewx = $(this).slider("value");
-      ns.skewy = $(this).slider("value");
-      lazysky();
+    change: function(event, ui) {
+      ns.phase0 = $(this).slider("value");
+      hueish();
     },
   });
 
@@ -277,21 +316,23 @@ function zoomout() {
 <svg id="pony" width="1500" height="480" viewBox="0 0 1500 480" perserveAspectRatio="xMidYMid"></svg>
 <br>
 
-<div id="skew_controls">
+<div class="cntls" id="skew_controls">
 <a href="#" id="clickit">unskew</a>
 <a href="#" id="clackit">skew</a>
 </div>
-<br>
 
 <a href="#" id="zoom">zoom</a>
-<a href="#" id="aligny">toggle alignment</a>
-<a href="#" id="circy">toggle circley</a>
-<br>
 
-<div id="slider0"></div><br>
-<div id="slider1"></div><br>
-<div id="slider2"></div>
+<div class="cntls" id="align_controls">
+<a href="#" id="aligny">align</a>
+<a href="#" id="circy">circle</a>
+<a href="#" id="resety">spread</a>
+</div>
 
+<br><br>
+
+<div id="slider0"></div>
+<div id="slider1"></div>
 
 </div>
 {% endblock %}
