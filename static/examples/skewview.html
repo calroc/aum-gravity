@@ -1,5 +1,8 @@
-{% extends "kmk.html" %}
-{% block extra_head %}
+<html>
+<head>
+<title>Skew</title>
+<meta charset="utf-8">
+
 <style>
 svg {
   border: 1px solid blue;
@@ -20,8 +23,13 @@ rect.fram {
   display: inline-block;
 }
 </style>
-{% endblock %}
-{% block script %}
+
+<script src="/static/d3.v3.js"></script>
+<script src="/static/underscore.js"></script>
+<script src="/static/jquery-ui-1.9.2/js/jquery-1.8.3.js"></script>
+<script src="/static/jquery-ui-1.9.2/js/jquery-ui-1.9.2.custom.js"></script>
+<link rel="stylesheet" href="/static/jquery-ui-1.9.2/css/smoothness/jquery-ui-1.9.2.custom.css" />
+
 <script>
 
 
@@ -314,8 +322,10 @@ function hueish() {
 
 });
 </script>
-{% endblock %}
-{% block body %}
+
+</head>
+<body>
+
 <h1>Hi There!</h1>
 <div id="container">
 <svg id="pony" width="1500" height="480" viewBox="0 0 1500 480" perserveAspectRatio="xMidYMid"></svg>
@@ -340,4 +350,7 @@ function hueish() {
 <div id="slider1"></div>
 
 </div>
-{% endblock %}
+
+</body>
+</html>
+
