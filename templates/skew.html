@@ -20,11 +20,15 @@ circle {
 var width = 1500, height = 480, marg = 23;
 var half_width = width / 2;
 var half_height = height / 2;
+
+var wk = d3.scale.linear().range([marg, width - marg]);
+var hk = d3.scale.linear().range([marg, height - marg]);
+
 var DATA = _.map(_.range(24), function (d) {
   return {
     d: d,
-    x: Math.random() * width,
-    y: Math.random() * height,
+    x: wk(Math.random()),
+    y: hk(Math.random()),
   };
 })
 
@@ -97,7 +101,6 @@ $(function() {
   var holes = g.selectAll("g.hole");
   var lep = g.selectAll("g.lep");
 
-
 //#######################################################################
 //  Create some nice labels.
 //
@@ -117,8 +120,6 @@ $(function() {
 
 //#######################################################################
 //  Adjust the skew.
-//
-//  These are inside the skew group so they pick it up, skewed text is so 2013.
 //#######################################################################
   function sky() {
     lep.transition()
@@ -156,11 +157,37 @@ $(function() {
     return false;
   }
 
+
+//#######################################################################
+//  Line 'em up and sort 'em back out again.
+//#######################################################################
+  function aligned_em() {
+    holes.transition()
+      .duration(1000)
+      .attr("transform", function(d) {
+        return "translate(" + w(d.d) + " " + half_height + ")";
+      })
+    zoomouty();
+    return false;
+  }
+
+  function loc_em() {
+    holes.transition()
+      .duration(1000)
+      .attr("transform", function(d) {
+        return "translate(" + d.x + " " + d.y + ")";
+      })
+    sky();
+    return false;
+  }
+
+
 //#######################################################################
 //  Set up the controls.
 //#######################################################################
   $("#clickit").click(zoomouty);
   $("#clackit").click(sky);
+  $("#aligny").toggle(aligned_em, loc_em);
 
   $("#slider0").slider({
     min: -89,
@@ -196,8 +223,9 @@ $(function() {
 <div id="container">
 <svg id="pony" width="1500" height="480" viewBox="0 0 1500 480" perserveAspectRatio="xMidYMid"></svg>
 <a href="#" id="clickit">unskew</a>
+<a href="#" id="clackit">skew</a>
 <br>
-<a href="#" id="clackit">clack</a>
+<a href="#" id="aligny">toggle alignment</a>
 <br>
 
 <div id="slider0"></div><br>
