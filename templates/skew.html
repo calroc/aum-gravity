@@ -17,12 +17,14 @@ circle {
 //  Global namespace.
 //#######################################################################
 
-var width = 1500, height = 240, marg = 23, half_width = width / 2;
+var width = 1500, height = 480, marg = 23;
+var half_width = width / 2;
+var half_height = height / 2;
 var DATA = _.map(_.range(24), function (d) {
   return {
     d: d,
     x: Math.random() * width,
-    y: Math.random() * height * 2,
+    y: Math.random() * height,
   };
 })
 
@@ -38,10 +40,7 @@ var ns = {
 };
 
 
-
-
 $(function() {
-
 
 //#######################################################################
 //  Set up the viewBox and resizing.
@@ -126,16 +125,16 @@ $(function() {
       .duration(1000)
       .attr("transform", function(d) {
 
-        var dy = Math.abs(d.y - height);
+        var dy = Math.abs(d.y - half_height);
         var dx = Math.abs(d.x - half_width);
         var x_scale = dx / half_width;
-        var y_scale = dy / height;
+        var y_scale = dy / half_height;
 
         var skewy = j(x_scale);
 
         // Figure out which quadrant we're in.
         var x = (d.x > half_width);
-        var y = (d.y < height);
+        var y = (d.y < half_height);
 
         skewy = ((x && y) || (!x && !y)) ? -skewy : skewy;
 
