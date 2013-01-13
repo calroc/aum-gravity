@@ -185,9 +185,25 @@ $(function() {
     holes.transition()
       .duration(1000)
       .attr("transform", function(d) {
-        return "translate(" + d.x + " " + d.y + ")";
+        return "translate(" + d.x + " " + d.y + ") rotate(0)";
       })
     sky();
+    return false;
+  }
+
+
+//#######################################################################
+//  Circle!
+//#######################################################################
+  function circ_em() {
+    holes.transition()
+      .duration(1000)
+      .attr("transform", function(d) {
+        var x = Math.sin(rad(d.d)) * 133 + half_width;
+        var y = Math.cos(rad(d.d)) * 133 + half_height;
+        return "translate(" + x + " " + y + ") rotate(" + (-deg(d.d)) + ")";
+      })
+    zoomouty();
     return false;
   }
 
@@ -218,10 +234,13 @@ function zoomout() {
 //#######################################################################
 //  Set up the controls.
 //#######################################################################
+
+  $("#skew_controls").buttonset();
   $("#clickit").click(zoomouty);
   $("#clackit").click(sky);
-  $("#zoom").toggle(zoomin, zoomout);
-  $("#aligny").toggle(aligned_em, loc_em);
+  $("#zoom").button().toggle(zoomin, zoomout);
+  $("#aligny").button().toggle(aligned_em, loc_em);
+  $("#circy").button().toggle(circ_em, loc_em);
 
   $("#slider0").slider({
     min: -89,
@@ -256,11 +275,17 @@ function zoomout() {
 <h1>Hi There!</h1>
 <div id="container">
 <svg id="pony" width="1500" height="480" viewBox="0 0 1500 480" perserveAspectRatio="xMidYMid"></svg>
+<br>
+
+<div id="skew_controls">
 <a href="#" id="clickit">unskew</a>
 <a href="#" id="clackit">skew</a>
+</div>
 <br>
+
 <a href="#" id="zoom">zoom</a>
 <a href="#" id="aligny">toggle alignment</a>
+<a href="#" id="circy">toggle circley</a>
 <br>
 
 <div id="slider0"></div><br>
