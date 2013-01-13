@@ -21,11 +21,11 @@ def index():
       )
 
 
-@app.route('/hello')
-def hello():
+@app.route('/x')
+def x():
     return render_template(
-      'mk.html',
-      title='Eye Bleeding',
+      'xerblin.html',
+      title='Ooo La La!',
       )
 
 
