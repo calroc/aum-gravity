@@ -2,10 +2,15 @@
 {% block extra_head %}
 <style>
 svg {
-  border: 2px solid black;
+  border: 1px solid blue;
 }
 circle {
   stroke-width: 1.5px;
+}
+rect.fram {
+  stroke-width: 1.5px;
+  stroke: pink;
+  fill: none;
 }
 </style>
 {% endblock %}
@@ -66,6 +71,11 @@ $(function() {
   var svg = d3.select("svg");
   var g = svg.append("svg:g");
 
+  g.append("svg:rect")
+  .attr("class", "fram")
+  .attr("width", width)
+  .attr("height", height)
+  ;
 
 //#######################################################################
 //  Each data element gets two groups and a rectangle:
@@ -183,10 +193,34 @@ $(function() {
 
 
 //#######################################################################
+//  Zoom in and out.
+//#######################################################################
+function zoomin() {
+  g.transition()
+    .duration(1000)
+    .attr("transform", function(d) {
+      var scale_factor = 0.68;
+      var x = width * scale_factor / 4;
+      var y = height * scale_factor / 4;
+      return "translate(" + x + " " + y + ") scale(" + scale_factor + ")";
+    });
+  return False;
+}
+
+function zoomout() {
+  g.transition()
+    .duration(1000)
+    .attr("transform", "translate(0 0) scale(1.0)");
+  return False;
+}
+
+
+//#######################################################################
 //  Set up the controls.
 //#######################################################################
   $("#clickit").click(zoomouty);
   $("#clackit").click(sky);
+  $("#zoom").toggle(zoomin, zoomout);
   $("#aligny").toggle(aligned_em, loc_em);
 
   $("#slider0").slider({
@@ -225,6 +259,7 @@ $(function() {
 <a href="#" id="clickit">unskew</a>
 <a href="#" id="clackit">skew</a>
 <br>
+<a href="#" id="zoom">zoom</a>
 <a href="#" id="aligny">toggle alignment</a>
 <br>
 
