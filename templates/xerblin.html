@@ -152,6 +152,13 @@ function stack_item(stack) {
 }
 
 
+//#######################################################################
+//  Support removing extra history displays.
+//
+//  (Mostly just for performance, but sometimes the previous displays
+//  obscure the current stack display.)
+//
+//#######################################################################
 function clear_history() {
   var n = history_list.length;
   if (n < 2) { return; };
@@ -166,47 +173,19 @@ function clear_history() {
 
 
 //#######################################################################
-//  Set up the controls.
+//  Ssend commands to the server and update the display(s).
 //#######################################################################
-
-  $("#meta_controls").buttonset();
-  $("#clickit").click(clear_history);
-  $("#zoom").toggle(zoomin, zoomout);
-
-//  $("#aligny").click(aligned_em);
-//  $("#circy").click(circ_em);
-//  $("#resety").click(loc_em);
-
-  $("#run_command").button();
-  $("form").submit(function() {
-    var command = $("#commande").val();
-//    if (command == "") { return false; };
-    $.post(
-      "/step",
-      {"command":command},
-      function(data) {
-        history_list.push(data.result[0]);
-        bar();
-      },
-      'json'
-    );
-    return false;
-  });
-
-  $.post("/step", {"command":""}, function(data) {
-    history_list.push(data.result[0]);
-    bar();
-    create_dictionary_buttons(data.result[1]);
-  });
-
   function post_command(cmd) {
     $.post("/step", {"command":cmd}, function(data) {
       history_list.push(data.result[0]);
       bar();
-    });
+      create_dictionary_buttons(data.result[1]);
+    },
+    'json');
   }
-
+  
   function create_dictionary_buttons(names) {
+    $("#dictionary_buttons").find('a').remove();
     _.each(names, function(name) {
       $("#dictionary_buttons").append('<a href="#" id="' + name + '">' + name + '</a>');
     });
@@ -216,6 +195,24 @@ function clear_history() {
       return false;
     });
   }
+
+//#######################################################################
+//  Set up the controls.
+//#######################################################################
+
+  $("#meta_controls").buttonset();
+  $("#clickit").click(clear_history);
+  $("#zoom").toggle(zoomin, zoomout);
+
+  $("#run_command").button();
+  $("form").submit(function() {
+    var command = $("#commande").val();
+//    if (command == "") { return false; };
+    post_command(command);
+    return false;
+  });
+
+  post_command("");
 
 });
 </script>
