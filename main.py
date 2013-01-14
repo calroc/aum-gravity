@@ -1,5 +1,6 @@
 import os
-from flask import Flask, url_for, render_template
+from flask import Flask, url_for, render_template, Response, request
+from shim import get_session, as_json
 
 
 WEBFACTION_TEMPLATES = '/home/calroc/webapps/smlaum/templates'
@@ -27,6 +28,22 @@ def x():
       'xerblin.html',
       title='Ooo La La!',
       )
+
+
+@app.route("/step", methods=['POST'])
+def step():
+    command = request.form['command']
+    print command ; print
+    w = get_session(None)
+    w.step(command.split())
+    res = as_json(w)
+    print res ; print
+    result=Response(
+        response='{"result":%s}' % (res,),
+        mimetype='application/json',
+        )
+    print '-' * 70
+    return result
 
 
 @app.route('/circ')
