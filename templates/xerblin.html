@@ -132,14 +132,8 @@ function stack_item(stack) {
   if (stack.empty()) { return; };
 
   var head = d3.select(stack.node());
-  var item = head.datum();
-  head.append('svg:text')
-    .text(function(d) { return "" + d; })
-    .style("fill", function(d) {
-      if (_.isString(item)) { return d3.hsl(90.0, 1, 0.33) };
-      if (_.isNumber(item)) { return d3.hsl(180.0, 1, 0.33) };
-      return d3.hsl(270.0, 1, 0.33)
-    });
+
+  head.call(display_item);
 
   var tail = stack.select(function(d, i) {
       return (i == 0) ? null : this;
@@ -151,6 +145,46 @@ function stack_item(stack) {
     .call(stack_item);
 }
 
+function display_array(S) {
+  S.selectAll('g')
+  .data(function(d, i) {
+    console.log(i);
+    console.log(d);
+    return d;
+  })
+  .enter().append('g')
+  .attr('transform', function(d, i) {
+    console.log(i);
+    console.log(d);
+    return 'translate(' + i * 35 + ' ' + i * 15 + ') rotate(' + i * 5 + ')';
+  })
+  .each(function (d, i){
+    d3.select(this).call(display_item);
+  });
+
+}
+
+function display_item(S) {
+  var item = S.datum();
+  if (_.isArray(item)) {
+    display_array(S);
+    return;
+  };
+  S.append('svg:text')
+    .text(function(d) {
+//      if (_.isArray(item)) { return "(" + item + ")"; };
+      if (_.isObject(item)) { return "" + item.name + "()"; };
+      if (_.isString(item)) { return '"' + item + '"'; };
+      return "" + d;
+    })
+    .style("fill", function(d) {
+//      if (_.isArray(item)) { return d3.hsl(0.0, 1, 0.33); };
+      if (_.isString(item)) { return d3.hsl(72.0, 1, 0.33); };
+      if (_.isNumber(item)) { return d3.hsl(144.0, 1, 0.33); };
+      if (_.isObject(item)) { return d3.hsl(216.0, 1, 0.33); };
+      return d3.hsl(288.0, 1, 0.33)
+    });
+}
 
 //#######################################################################
 //  Support removing extra history displays.
