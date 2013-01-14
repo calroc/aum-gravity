@@ -13,11 +13,11 @@ rect.fram {
   stroke: pink;
   fill: none;
 }
-#slider0, #slider1 {
-  margin-bottom: 1em;
-}
 .cntls {
-  display: inline-block;
+  display: inline;
+}
+.cntls a {
+  margin-bottom: 0.5em;
 }
 </style>
 {% endblock %}
@@ -101,37 +101,31 @@ function zoomout() {
 //#######################################################################
 //  Graph Stack.
 //#######################################################################
-function foo(interpreter) {
-  history_list.push(interpreter[0]);
-  bar();
-}
-
 function bar() {
   var n = history_list.length;
 
-  var gtick = g.selectAll('g.tick')
-    .data(history_list);
-    
-    gtick.transition() // Update existing stack displays.
-    .duration(1500)
-    .attr('opacity', function(d, i) { return Math.pow(0.88, (n - i)); })
-    .attr('transform', function(d, i) {
-      i = n - i;
-      var scale_factor = Math.pow(0.88, i);
-      var rot = -(5 * i);
-      var x = stack_align - i * (80 * scale_factor);
-      var y = 15 * i;
-      return 'translate(' + x + ' ' + y + ') rotate(' + rot + ') scale(' + scale_factor + ')';
-    });
+  var gtick = g.selectAll('g.tick').data(history_list);
+  
+  gtick.transition() // Update existing stack displays.
+  .duration(1500)
+  .attr('opacity', function(d, i) { return Math.pow(0.88, (n - i)); })
+  .attr('transform', function(d, i) {
+    i = n - i;
+    var scale_factor = Math.pow(0.88, i);
+    var rot = -(5 * i);
+    var x = stack_align - i * (80 * scale_factor);
+    var y = 15 * i;
+    return 'translate(' + x + ' ' + y + ') rotate(' + rot + ') scale(' + scale_factor + ')';
+  });
 
-    gtick.enter().append('g') // Create a stack display for current.
-    .attr("class", "tick")
-    .attr('transform', 'translate(' + stack_align + ' 15)')
-    .selectAll('g')
-    .data(function(d) { return d; })
-    .enter().append('g')
-    .attr("class", "innertic")
-    .call(stack_item);
+  gtick.enter().append('g') // Create a stack display for current.
+  .attr("class", "tick")
+  .attr('transform', 'translate(' + stack_align + ' 15)')
+  .selectAll('g')
+  .data(function(d) { return d; })
+  .enter().append('g')
+  .attr("class", "innertic")
+  .call(stack_item);
 }
 
 function stack_item(stack) {
@@ -167,6 +161,7 @@ function clear_history() {
   g.selectAll('g.tick').data([]).exit().remove();
   // and redraw.
   bar();
+  return false;
 }
 
 
@@ -174,44 +169,53 @@ function clear_history() {
 //  Set up the controls.
 //#######################################################################
 
-  $("#clickit").button().click(clear_history);
+  $("#meta_controls").buttonset();
+  $("#clickit").click(clear_history);
+  $("#zoom").toggle(zoomin, zoomout);
 
-  $("#zoom").button().toggle(zoomin, zoomout);
-
-//  $("#align_controls").buttonset();
 //  $("#aligny").click(aligned_em);
 //  $("#circy").click(circ_em);
 //  $("#resety").click(loc_em);
 
-  $("#slider0").slider({
-/*
-    min: 0,
-    max: 359,
-    slide: function(event, ui) {
-      ns.huex = $(this).slider("value");
-      hueish();
-    },
-    change: function(event, ui) {
-      ns.huex = $(this).slider("value");
-      hueish();
-    },
-*/
-  });
-
   $("#run_command").button();
   $("form").submit(function() {
     var command = $("#commande").val();
+//    if (command == "") { return false; };
     $.post(
       "/step",
       {"command":command},
       function(data) {
-//        console.log(data);
-        foo(data.result);
+        history_list.push(data.result[0]);
+        bar();
       },
       'json'
     );
     return false;
   });
+
+  $.post("/step", {"command":""}, function(data) {
+    history_list.push(data.result[0]);
+    bar();
+    create_dictionary_buttons(data.result[1]);
+  });
+
+  function post_command(cmd) {
+    $.post("/step", {"command":cmd}, function(data) {
+      history_list.push(data.result[0]);
+      bar();
+    });
+  }
+
+  function create_dictionary_buttons(names) {
+    _.each(names, function(name) {
+      $("#dictionary_buttons").append('<a href="#" id="' + name + '">' + name + '</a>');
+    });
+    $("#dictionary_buttons").find('a').button().click(function() {
+      var cmd = $(this).text();
+      post_command(cmd);
+      return false;
+    });
+  }
 
 });
 </script>
@@ -222,17 +226,18 @@ function clear_history() {
 <svg id="pony" width="1500" height="480" viewBox="0 0 1500 480" perserveAspectRatio="xMidYMid"></svg>
 <br>
 
+<div class="cntls" id="meta_controls">
 <a href="#" id="clickit">clear</a>
-
 <a href="#" id="zoom">zoom</a>
+</div>
 
-<div class="cntls" id="align_controls"></div>
+<div class="cntls" id="dictionary_buttons"></div>
 
 <div>
-<form>
-<input id="commande" name="command" type="text" />
-<input id="run_command" type="submit" value="run" />
-</form>
+ <form>
+  <input id="commande" name="command" type="text" />
+  <input id="run_command" type="submit" value="run" />
+ </form>
 </div>
 
 </div>
