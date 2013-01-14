@@ -1,5 +1,6 @@
 {% extends "kmk.html" %}
 {% block extra_head %}
+<link rel="stylesheet" href="/static/forms.css" />
 <style>
 svg {
   border: 1px solid blue;
@@ -13,12 +14,16 @@ rect.fram {
   stroke: pink;
   fill: none;
 }
-.cntls {
-  display: inline;
-}
-.cntls a {
+
+a {
   margin-bottom: 0.5em;
 }
+
+.ffll {
+  display: inline;
+  margin-right: 0.5em;
+}
+
 </style>
 {% endblock %}
 {% block script %}
@@ -246,6 +251,27 @@ function clear_history() {
     return false;
   });
 
+  $("#entry_controls").buttonset();
+  $("#runit").click(function() { $("form").submit(); return false; });
+  $("#stackit").click(function() {
+    var cmd = '"' + $("#commande").val() + '"';
+    post_command(cmd);
+    return false;
+  });
+  $("#lookit").click(function() {
+    var command = $("#commande").val();
+    command = command.split(/\s+/);
+    command = _.map(command, function(z) { return '"' + z + '"'; });
+    command = command.join(" lookup ").concat(" lookup");
+    post_command(command);
+    return false;
+  });
+
+  $("#clear_entry").button().click(function() {
+    $("#commande").val("");
+    return false;
+  });
+
   post_command("");
 
 });
@@ -257,19 +283,26 @@ function clear_history() {
 <svg id="pony" width="1500" height="480" viewBox="0 0 1500 480" perserveAspectRatio="xMidYMid"></svg>
 <br>
 
-<div class="cntls" id="meta_controls">
-<a href="#" id="clickit">clear</a>
-<a href="#" id="zoom">zoom</a>
-</div>
-
-<div class="cntls" id="dictionary_buttons"></div>
+<div id="dictionary_buttons"></div>
 
 <div>
- <form>
-  <input id="commande" name="command" type="text" />
-  <input id="run_command" type="submit" value="run" />
- </form>
+<form>
+ <input id="commande" name="command" type="text" />
+</form>
 </div>
+
+<div class="ffll" id="meta_controls">
+ <a href="#" id="clickit">clear history display</a>
+ <a href="#" id="zoom">toggle zoom out</a>
+</div>
+
+<div class="ffll" id="entry_controls">
+ <a href="#" id="runit">run command</a>
+ <a href="#" id="stackit">enstacken command</a>
+ <a href="#" id="lookit">look up words</a>
+</div>
+
+<a href="#" id="clear_entry">clear text entry</a>
 
 </div>
 {% endblock %}
