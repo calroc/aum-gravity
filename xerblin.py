@@ -481,6 +481,22 @@ def over((stack, dictionary)):
 
 # Programming words.
 
+
+def new_thing((stack, dictionary)):
+    '''
+    Put the empty tuple onto the stack.  Used to create new dictionaries
+    and stacks.
+    '''
+    return ((), stack), dictionary
+
+
+def dictionary_insert((stack, dictionary)):
+    value, key, d, stack = pop(stack, 3)
+    d = insert(d, key, value)
+    return (d, stack), dictionary
+
+# new_thing "x" 100 dictionary_insert "y" 88 dictionary_insert
+
 def lookup(interpreter):
     '''
     Given a name on the top of the stack, look up the named command in
