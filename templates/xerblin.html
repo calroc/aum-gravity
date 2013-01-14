@@ -103,24 +103,28 @@ function zoomout() {
 //#######################################################################
 function foo(interpreter) {
   history_list.push(interpreter[0]);
+  bar();
+}
+
+function bar() {
   var n = history_list.length;
 
   var gtick = g.selectAll('g.tick')
     .data(history_list);
     
-    gtick.transition()
+    gtick.transition() // Update existing stack displays.
     .duration(1500)
     .attr('opacity', function(d, i) { return Math.pow(0.88, (n - i)); })
     .attr('transform', function(d, i) {
-      var ni = n - i;
-      var scale_factor = Math.pow(0.88, ni);
-      var rot = -(5 * ni);
-      var x = stack_align - ni * (80 * scale_factor);
-      var y = 15 * ni;
+      i = n - i;
+      var scale_factor = Math.pow(0.88, i);
+      var rot = -(5 * i);
+      var x = stack_align - i * (80 * scale_factor);
+      var y = 15 * i;
       return 'translate(' + x + ' ' + y + ') rotate(' + rot + ') scale(' + scale_factor + ')';
     });
 
-    gtick.enter().append('g')
+    gtick.enter().append('g') // Create a stack display for current.
     .attr("class", "tick")
     .attr('transform', 'translate(' + stack_align + ' 15)')
     .selectAll('g')
@@ -153,17 +157,28 @@ function stack_item(stack) {
     .call(stack_item);
 }
 
+
+function clear_history() {
+  var n = history_list.length;
+  if (n < 2) { return; };
+  history_list.splice(0, n - 1);
+
+  // Just ditch them all for now,
+  g.selectAll('g.tick').data([]).exit().remove();
+  // and redraw.
+  bar();
+}
+
+
 //#######################################################################
 //  Set up the controls.
 //#######################################################################
 
-  $("#skew_controls").buttonset();
-//  $("#clickit").click(reset_skew);
-//  $("#clackit").click(sky);
+  $("#clickit").button().click(clear_history);
 
   $("#zoom").button().toggle(zoomin, zoomout);
 
-  $("#align_controls").buttonset();
+//  $("#align_controls").buttonset();
 //  $("#aligny").click(aligned_em);
 //  $("#circy").click(circ_em);
 //  $("#resety").click(loc_em);
@@ -207,22 +222,11 @@ function stack_item(stack) {
 <svg id="pony" width="1500" height="480" viewBox="0 0 1500 480" perserveAspectRatio="xMidYMid"></svg>
 <br>
 
-<div class="cntls" id="skew_controls">
-<a href="#" id="clickit">unskew</a>
-<a href="#" id="clackit">skew</a>
-</div>
+<a href="#" id="clickit">clear</a>
 
 <a href="#" id="zoom">zoom</a>
 
-<div class="cntls" id="align_controls">
-<a href="#" id="aligny">align</a>
-<a href="#" id="circy">circle</a>
-<a href="#" id="resety">spread</a>
-</div>
-
-<br><br>
-
-<div id="slider0"></div>
+<div class="cntls" id="align_controls"></div>
 
 <div>
 <form>
