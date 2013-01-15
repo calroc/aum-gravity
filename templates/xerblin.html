@@ -1,5 +1,6 @@
 {% extends "kmk.html" %}
 {% block extra_head %}
+<script src="static/xerblin.js"></script>
 <link rel="stylesheet" href="/static/forms.css" />
 <style>
 svg {
@@ -153,15 +154,31 @@ function stack_item(stack) {
 function display_array(S) {
   S.selectAll('g')
   .data(function(d, i) {
-    console.log(i);
-    console.log(d);
+//    console.log('group', i, d);
     return d;
   })
   .enter().append('g')
   .attr('transform', function(d, i) {
-    console.log(i);
-    console.log(d);
-    return 'translate(' + i * 35 + ' ' + i * 15 + ') rotate(' + i * 5 + ')';
+//    console.log('each', i, d);
+    var rot = 0, x = i * 45, y = 0;
+//    i * 15
+    
+    if (i > 1) {
+      y = (i - 1) * 35;
+      y = (i % 2) ? y : y - 20;
+      rot = (i % 2) ? 15 : -1;
+      if (i % 2) { x -= 40; }
+    }
+/*
+    } else if (i == 2) {
+      var rot = 15;
+    } else if (i == 3) {
+      var rot = 5;
+    } else {
+      var rot = 15 * i;
+    }
+*/
+    return 'translate(' + x + ' ' + y + ') rotate(' + rot + ')';
   })
   .each(function (d, i){
     d3.select(this).call(display_item);
