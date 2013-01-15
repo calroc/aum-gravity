@@ -212,6 +212,38 @@ var library = {
     return [stack, dictionary];
   },
 
+  NewSeqWord: function NewSeqWord(I) {
+    var stack = I[0], s = [], item;
+    while (stack.length != 0) {
+      item = stack[0];
+      stack = stack[1];
+      s.push(item);
+    }
+    s.push(handle_sequence)
+    stack = [s.reverse(), []];
+    return [stack, I[1]];
+  },
+
+  NewLoopWord: function NewLoopWord(I) {
+    var stack = I[0], s = [handle_loop], item;
+    while (stack.length != 0) {
+      item = stack[0];
+      stack = stack[1];
+      s.push(item);
+    }
+    s.push(handle_loop)
+    stack = [s.reverse(), []];
+    return [stack, I[1]];
+  },
+
+  NewBranchWord: function NewBranchWord(I) {
+    var stack = I[0];
+    var t = pop(stack, 2);
+    var b = [handle_branch, t[0], t[1]];
+    stack = [b, t[2]];
+    return [stack, I[1]];
+  },
+
 /*
   : function (I) {
     return [];
@@ -225,29 +257,6 @@ function create_new_interpreter() {
   _.each(library, function(value, key) { d = insert(d, key, value); });
   return [[], d];
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

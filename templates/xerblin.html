@@ -49,7 +49,7 @@ var rad = d3.scale.linear().domain([0, 24]).range([0.0, 6.283185307179586]);
 var deg = d3.scale.linear().domain([0, 24]).range([0.0, 360.0]);
 var j = d3.scale.pow().exponent(5).domain([0.0, 1.0]).range([0, 70])
 
-var history_list = [];
+var history_list = [], ns = {};
 
 
 $(function() {
@@ -231,13 +231,15 @@ function clear_history() {
 //#######################################################################
 //  Ssend commands to the server and update the display(s).
 //#######################################################################
+
   function post_command(cmd) {
-    $.post("/step", {"command":cmd}, function(data) {
-      history_list.push(data.result[0]);
-      bar();
-      create_dictionary_buttons(data.result[1]);
-    },
-    'json');
+    cmd = cmd.split(/\s+/);
+    console.log('post_command', cmd);
+    var I = interpret(ns.I, cmd);
+    ns.I = I;
+    history_list.push(I[0]);
+    bar();
+    create_dictionary_buttons(_.keys(to_obj(I[1])).sort());
   }
   
   function create_dictionary_buttons(names) {
@@ -289,7 +291,16 @@ function clear_history() {
     return false;
   });
 
-  post_command("");
+  function initit() {
+    var I = create_new_interpreter();
+    ns.I = I;
+    history_list.push(I[0]);
+    bar();
+    var names = _.keys(to_obj(I[1])).sort();
+    create_dictionary_buttons(names);
+  }
+
+  initit();
 
 });
 </script>
