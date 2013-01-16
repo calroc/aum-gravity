@@ -265,6 +265,11 @@ rect.fram {
   fill: none;
 }
 
+.newframe > rect {
+  stroke-width: 1.5px;
+  stroke: green;
+}
+
 a {
   margin-bottom: 0.5em;
 }
@@ -449,7 +454,12 @@ function display_item(S) {
   S.append('svg:text')
     .text(function(d) {
 //      if (_.isArray(item)) { return "(" + item + ")"; };
-      if (_.isObject(item)) { return "" + item.name + "()"; };
+      if (_.isObject(item)) {
+        if (_.isUndefined(item.name)) {
+          return "" + item;
+        }
+        return "" + item.name + "()";
+      };
       if (_.isString(item)) { return '"' + item + '"'; };
       return "" + d;
     })
@@ -545,6 +555,50 @@ function clear_history() {
     return false;
   });
 
+  function new_group(I) {
+    var grp = g.append("svg:g")
+      .attr("class", "newframe")
+      .append("svg:rect")
+      .attr("x", half_width)
+      .attr("y", half_height)
+      .attr("width", 100)
+      .attr("height", 161)
+      .attr("fill", "none")
+      ;
+    return [[grp, I[0]], I[1]]
+  }
+  library.new_group = new_group;
+
+  library.set_attr = function set_attr(I) {
+    var stack = I[0], dictionary = I[1];
+    var t = pop(stack, 3);
+    stack = t[3];
+    var attr_name = t[0], attr_value = t[1], thing = t[2];
+    thing.attr(attr_name, attr_value);
+    return [[thing, stack], dictionary]
+  };
+
+  library.trans = function trans(I) {
+    var stack = I[0], dictionary = I[1];
+    var t = pop(stack, 4);
+    stack = t[4];
+    var effect = t[0], delay = t[1], duration = t[2], thing = t[3];
+    thing.transition()
+    .delay(delay)
+    .duration(duration)
+    .call(effect);
+    return [[thing, stack], dictionary]
+  };
+
+  library.make_effect = function make_effect(I) {
+    var stack = I[0], dictionary = I[1];
+    var t = pop(stack, 2);
+    stack = t[2];
+    var attr_name = t[0], attr_value = t[1];
+    var f = function(T) { T.attr(attr_name, attr_value); };
+    return [[f, stack], dictionary];
+  };
+
   (function() {
     var I = create_new_interpreter();
     ns.I = I;
@@ -574,17 +628,16 @@ function clear_history() {
 </div>
 
 <div class="ffll" id="meta_controls">
- <a href="#" id="clickit">clear history display</a>
- <a href="#" id="zoom">toggle zoom out</a>
+ <a href="#" id="clickit">clear history</a>
+ <a href="#" id="zoom">zoom</a>
+ <a href="#" id="clear_entry">clear text</a>
 </div>
 
 <div class="ffll" id="entry_controls">
- <a href="#" id="runit">run command</a>
- <a href="#" id="stackit">enstacken command</a>
- <a href="#" id="lookit">look up words</a>
+ <a href="#" id="runit">run</a>
+ <a href="#" id="stackit">push</a>
+ <a href="#" id="lookit">look up</a>
 </div>
-
-<a href="#" id="clear_entry">clear text entry</a>
 
 </div>
 
