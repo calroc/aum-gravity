@@ -1,8 +1,7 @@
 <html>
 <head>
-<title>Ooo La La!</title>
+<title>Xerblin Generic</title>
 <meta charset="utf-8">
-
 <script>
 
 function push(stack) {
@@ -252,33 +251,6 @@ select { width: 100%; }
 
 /* Some bits of miscellaneous CSS */
 
-svg {
-  border: 1px solid blue;
-  margin-bottom: 1em;
-}
-circle {
-  stroke-width: 1.5px;
-}
-rect.fram {
-  stroke-width: 1.5px;
-  stroke: pink;
-  fill: none;
-}
-
-.newframe > rect {
-  stroke-width: 1.5px;
-  stroke: green;
-}
-
-a {
-  margin-bottom: 0.5em;
-}
-
-.ffll {
-  display: inline;
-  margin-right: 0.5em;
-}
-
 </style>
 
 <script src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.0.1/d3.v3.min.js"></script>
@@ -294,202 +266,55 @@ a {
 //  Global namespace.
 //#######################################################################
 
-var width = 1500, height = 480, marg = 23;
-var stack_align = width / 3;
-var half_width = width / 2;
-var half_height = height / 2;
-
-var wk = d3.scale.linear().range([marg, width - marg]);
-var hk = d3.scale.linear().range([marg, height - marg]);
-
-var k = d3.scale.linear().domain([0, 23]);
-var w = d3.scale.linear().domain([-1, 24]).range([marg, width - marg]);
-var rad = d3.scale.linear().domain([0, 24]).range([0.0, 6.283185307179586]);
-var deg = d3.scale.linear().domain([0, 24]).range([0.0, 360.0]);
-var j = d3.scale.pow().exponent(5).domain([0.0, 1.0]).range([0, 70])
-
 var history_list = [], ns = {};
 
 
 $(function() {
 
-//#######################################################################
-//  Set up the viewBox and resizing.
-//#######################################################################
-  var the_svg = $("#pony");
-  var aspect = the_svg.width() / the_svg.height();
-  $(window).on("resize", function() {
-    var the_svg = $("#pony");
-    var container = $("#container");
-    var targetWidth = container.width();
-    the_svg.attr("width", targetWidth);
-    the_svg.attr("height", Math.round(targetWidth / aspect));
-  }).trigger("resize");
-
 
 //#######################################################################
-//  Create the main group.
-//#######################################################################
-  var svg = d3.select("svg");
-  var g = svg.append("svg:g");
-
-  g.append("svg:rect")
-  .attr("class", "fram")
-  .attr("x", 0.5)
-  .attr("y", 0.5)
-  .attr("width", width - 1)
-  .attr("height", height - 1)
-  ;
-
-
-//#######################################################################
-//  Zoom in and out.
-//#######################################################################
-function zoomin() {
-  g.transition()
-    .duration(1000)
-    .attr("transform", function(d) {
-      var scale_factor = 0.68;
-      var x = width * scale_factor / 4;
-      var y = height * scale_factor / 4;
-      return "translate(" + x + " " + y + ") scale(" + scale_factor + ")";
-    });
-  return false;
-}
-
-function zoomout() {
-  g.transition()
-    .duration(1000)
-    .attr("transform", "translate(0 0) scale(1.0)");
-  return false;
-}
-
-
-//#######################################################################
-//  Graph Stack.
+//  Render Stack.
 //#######################################################################
 function bar() {
   var n = history_list.length;
-
-  var gtick = g.selectAll('g.tick').data(history_list);
-  
-  gtick.transition() // Update existing stack displays.
-  .duration(1500)
-  .attr('opacity', function(d, i) { return Math.pow(0.88, (n - i)); })
-  .attr('transform', function(d, i) {
-    i = n - i;
-    var scale_factor = Math.pow(0.88, i);
-    var rot = -(5 * i);
-    var x = stack_align - i * (80 * scale_factor);
-    var y = 15 * i;
-    return 'translate(' + x + ' ' + y + ') rotate(' + rot + ') scale(' + scale_factor + ')';
-  });
-
-  gtick.enter().append('g') // Create a stack display for current.
-  .attr("class", "tick")
-  .attr('transform', 'translate(' + stack_align + ' 15)')
-  .selectAll('g')
-  .data(function(d) { return d; })
-  .enter().append('g')
-  .attr("class", "innertic")
-  .call(stack_item);
+  var sd = $('#stack_display');
+  sd.contents().remove();
+  stack_item(history_list[history_list.length - 1], sd);
 }
 
-function stack_item(stack) {
-  if (stack.empty()) { return; };
-
-  var head = d3.select(stack.node());
-
-  head.call(display_item);
-
-  var tail = stack.select(function(d, i) {
-      return (i == 0) ? null : this;
-    })
-  tail.selectAll('g')
-    .data(function(d) { return d; })
-    .enter().append('g')
-    .attr('transform', 'translate(0 17) scale(.95)')
-    .call(stack_item);
+function stack_item(stack, list) {
+  if (stack.length == 0) { return; };
+  display_item(stack[0], list);
+  stack_item(stack[1], list);
 }
 
-function display_array(S) {
-  S.selectAll('g')
-  .data(function(d, i) {
-//    console.log('group', i, d);
-    return d;
-  })
-  .enter().append('g')
-  .attr('transform', function(d, i) {
-//    console.log('each', i, d);
-    var rot = 0, x = i * 45, y = 0;
-//    i * 15
-    
-    if (i > 1) {
-      y = (i - 1) * 35;
-      y = (i % 2) ? y : y - 20;
-      rot = (i % 2) ? 15 : -1;
-      if (i % 2) { x -= 40; }
-    }
-/*
-    } else if (i == 2) {
-      var rot = 15;
-    } else if (i == 3) {
-      var rot = 5;
-    } else {
-      var rot = 15 * i;
-    }
-*/
-    return 'translate(' + x + ' ' + y + ') rotate(' + rot + ')';
-  })
-  .each(function (d, i){
-    d3.select(this).call(display_item);
-  });
-
-}
-
-function display_item(S) {
-  var item = S.datum();
+function display_item(item, list) {
   if (_.isArray(item)) {
-    display_array(S);
-    return;
-  };
-  S.append('svg:text')
-    .text(function(d) {
-//      if (_.isArray(item)) { return "(" + item + ")"; };
-      if (_.isObject(item)) {
-        if (_.isUndefined(item.name)) {
-          return "" + item;
-        }
-        return "" + item.name + "()";
-      };
-      if (_.isString(item)) { return '"' + item + '"'; };
-      return "" + d;
-    })
-    .style("fill", function(d) {
-//      if (_.isArray(item)) { return d3.hsl(0.0, 1, 0.33); };
-      if (_.isString(item)) { return d3.hsl(72.0, 1, 0.33); };
-      if (_.isNumber(item)) { return d3.hsl(144.0, 1, 0.33); };
-      if (_.isObject(item)) { return d3.hsl(216.0, 1, 0.33); };
-      return d3.hsl(288.0, 1, 0.33)
-    });
+    display_array(item, list);
+  } else if (_.isString(item)) {
+    list.append('<li>&quot;' + item + '&quot;');
+  } else if (_.isObject(item) && !_.isUndefined(item.name)) {
+    list.append('<li>' + item.name + '()');
+  } else {
+    list.append('<li>' + item);
+  }
 }
+
+function display_array(A, list) {
+  var d = list.append('<ul></ul>').find('ul');
+  _.each(A, function(item) {
+    return display_item(item, d);
+  });
+}
+
 
 //#######################################################################
-//  Support removing extra history displays.
-//
-//  (Mostly just for performance, but sometimes the previous displays
-//  obscure the current stack display.)
-//
+//  Support removing extra history.
 //#######################################################################
 function clear_history() {
   var n = history_list.length;
   if (n < 2) { return; };
   history_list.splice(0, n - 1);
-
-  // Just ditch them all for now,
-  g.selectAll('g.tick').data([]).exit().remove();
-  // and redraw.
-  bar();
   return false;
 }
 
@@ -526,7 +351,6 @@ function clear_history() {
 
   $("#meta_controls").buttonset();
   $("#clickit").click(clear_history);
-  $("#zoom").toggle(zoomin, zoomout);
 
   $("#run_command").button();
   $("form").submit(function() {
@@ -557,62 +381,6 @@ function clear_history() {
     return false;
   });
 
-  function new_group(I) {
-    var grp = g.append("svg:g")
-      .attr("class", "newframe")
-      .attr("transform", "translate(" + half_width +" " + half_height + ")")
-      ;
-    grp.append("svg:rect")
-      .attr("width", 100)
-      .attr("height", 161)
-      .attr("fill", "none")
-      ;
-    return [[grp, I[0]], I[1]]
-  }
-  library.new_group = new_group;
-
-  library.set_attr = function set_attr(I) {
-    var stack = I[0], dictionary = I[1];
-    var t = pop(stack, 3);
-    stack = t[3];
-    var attr_name = t[0], attr_value = t[1], thing = t[2];
-    thing.attr(attr_name, attr_value);
-    return [[thing, stack], dictionary]
-  };
-
-  library.trans = function trans(I) {
-    var stack = I[0], dictionary = I[1];
-    var t = pop(stack, 4);
-    stack = t[4];
-    var effect = t[0], delay = t[1], duration = t[2], thing = t[3];
-    thing.transition()
-    .delay(delay)
-    .duration(duration)
-    .call(effect);
-    return [[thing, stack], dictionary]
-  };
-
-  library.make_effect = function make_effect(I) {
-    var stack = I[0], dictionary = I[1];
-    var t = pop(stack, 2);
-    stack = t[2];
-    var attr_name = t[0], attr_value = t[1];
-    var f = function(T) { T.attr(attr_name, attr_value); };
-    return [[f, stack], dictionary];
-  };
-
-  library.append_image = function append_image(I) {
-    var stack = I[0], dictionary = I[1];
-    var t = pop(stack, 2);
-    stack = t[2];
-    var image_url = t[0], group = t[1];
-    var img = group.append("image")
-      .attr('width', 64)
-      .attr('height', 64)
-      .attr("xlink:href", image_url);
-    return [[img, stack], dictionary];
-  };
-
   (function() {
     var I = create_new_interpreter();
     ns.I = I;
@@ -630,9 +398,8 @@ function clear_history() {
 
 <h1>Hi There!</h1>
 <div id="container">
-<svg id="pony" width="1500" height="480" viewBox="0 0 1500 480" perserveAspectRatio="xMidYMid"></svg>
-<br>
 
+<div><ul id="stack_display"></ul></div>
 <div id="dictionary_buttons"></div>
 
 <div>
