@@ -284,7 +284,6 @@ function bar() {
 
 function stack_item(stack, list) {
   if (stack.length == 0) { return; };
-  console.log(stack.length, stack);
   display_item(stack[0], list);
   stack_item(stack[1], list);
 }
@@ -303,21 +302,8 @@ function display_item(item, list) {
 
 function display_array(A, list) {
   var d = $('<ul></ul>');
-  _.each(A, function(item) {
-    return display_item(item, d);
-  });
+  _.each(A, function(item) { return display_item(item, d); });
   list.append(d);
-}
-
-
-//#######################################################################
-//  Support removing extra history.
-//#######################################################################
-function clear_history() {
-  var n = history_list.length;
-  if (n < 2) { return; };
-  history_list.splice(0, n - 1);
-  return false;
 }
 
 
@@ -326,11 +312,11 @@ function clear_history() {
 //#######################################################################
 
   function post_command(cmd) {
-    cmd = cmd.split(/\s+/);
     console.log('post_command', cmd);
     var I = interpret(ns.I, cmd);
+    console.log('post_command', I);
     ns.I = I;
-    history_list.push(I[0]);
+    history_list[0] = I[0];
     bar();
     create_dictionary_buttons(_.keys(to_obj(I[1])).sort());
   }
@@ -342,7 +328,7 @@ function clear_history() {
     });
     $("#dictionary_buttons").find('a').button().click(function() {
       var cmd = $(this).text();
-      post_command(cmd);
+      post_command([cmd]);
       return false;
     });
   }
@@ -352,29 +338,18 @@ function clear_history() {
 //#######################################################################
 
   $("#meta_controls").buttonset();
-  $("#clickit").click(clear_history);
 
-  $("#run_command").button();
   $("form").submit(function() {
-    var command = $("#commande").val();
-//    if (command == "") { return false; };
+    var command = $("#commande").val().split(/\s+/);
     post_command(command);
     return false;
   });
 
-  $("#entry_controls").buttonset();
-  $("#runit").click(function() { $("form").submit(); return false; });
+  $("#runit").click($("form").submit);
+
   $("#stackit").click(function() {
-    var cmd = '"' + $("#commande").val() + '"';
+    var cmd = ['"' + $("#commande").val() + '"'];
     post_command(cmd);
-    return false;
-  });
-  $("#lookit").click(function() {
-    var command = $("#commande").val();
-    command = command.split(/\s+/);
-    command = _.map(command, function(z) { return '"' + z + '"'; });
-    command = command.join(" lookup ").concat(" lookup");
-    post_command(command);
     return false;
   });
 
@@ -400,30 +375,19 @@ function clear_history() {
 
 <h1>Hi There!</h1>
 <div id="container">
-
 <div><ul id="stack_display"></ul></div>
 <div id="dictionary_buttons"></div>
-
 <div>
-<form>
- <input id="commande" name="command" type="text" />
-</form>
+ <form>
+  <input id="commande" name="command" type="text" />
+  <div id="meta_controls">
+   <a href="#" id="runit">interpret</a>
+   <a href="#" id="stackit">push as text</a>
+   <a href="#" id="clear_entry">clear text</a>
+  </div>
+ </form>
 </div>
-
-<div class="ffll" id="meta_controls">
- <a href="#" id="clickit">clear history</a>
- <a href="#" id="zoom">zoom</a>
- <a href="#" id="clear_entry">clear text</a>
 </div>
-
-<div class="ffll" id="entry_controls">
- <a href="#" id="runit">run</a>
- <a href="#" id="stackit">push</a>
- <a href="#" id="lookit">look up</a>
-</div>
-
-</div>
-
 </body>
 </html>
 
