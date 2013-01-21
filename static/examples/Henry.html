@@ -178,6 +178,20 @@ var library = {
     return [I[0][1], I[1]];
   },
 
+  tuck: function tuck(I) {
+    var stack = I[0];
+    var t = pop(stack, 2);
+    stack = push(t[2], t[0], t[1], t[0])
+    return [stack, I[1]];
+  },
+
+  over: function over(I) {
+    var stack = I[0];
+    var t = pop(stack, 2);
+    stack = push(t[2], t[1], t[0], t[1])
+    return [stack, I[1]];
+  },
+
   lookup: function lookup(I) {
     var stack = I[0], name = stack[0];
     word = get(I[1], name)
@@ -191,6 +205,12 @@ var library = {
     stack = t[2];
     dictionary = insert(I[1], name, word)
     return [stack, dictionary];
+  },
+
+  forget: function forget(I) {
+    var stack = I[0], name = stack[0];
+    var dictionary = del(I[1], name)
+    return [stack[1], dictionary];
   },
 
   NewSeqWord: function NewSeqWord(I) {
@@ -224,6 +244,35 @@ var library = {
     stack = [b, t[2]];
     return [stack, I[1]];
   },
+
+  add: function add(I) {
+    var stack = I[0];
+    var t = pop(stack, 2);
+    var result = t[0] + t[1];
+    return [[result, t[2]], I[1]];
+  },
+
+  sub: function sub(I) {
+    var stack = I[0];
+    var t = pop(stack, 2);
+    var result = t[1] - t[0];
+    return [[result, t[2]], I[1]];
+  },
+
+  mul: function mul(I) {
+    var stack = I[0];
+    var t = pop(stack, 2);
+    var result = t[0] * t[1];
+    return [[result, t[2]], I[1]];
+  },
+
+  div: function div(I) {
+    var stack = I[0];
+    var t = pop(stack, 2);
+    var result = t[1] / t[0];
+    return [[result, t[2]], I[1]];
+  },
+
 
 /*
   : function (I) {
