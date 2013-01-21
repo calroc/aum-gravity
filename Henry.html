@@ -116,26 +116,26 @@ function _pop_TOS(I) {
   return [TOS, [stack, dictionary]];
 }
 
-function handle_sequence(I, seq) {
+function sequence(I, seq) {
   var body = seq.slice(1);
   return _.reduce(body, function(interpreter, func) {
     return apply_func(interpreter, func);
   }, I);
 }
 
-function handle_branch(I, branch) {
+function branch(I, branch) {
   var it = _pop_TOS(I);
   var TOS = it[0];
   var func = branch[(!!TOS) ? 1 : 2]; // i.e. true = 1; false = 2
   return apply_func(it[1], func);
 }
 
-function handle_loop(I, loop) {
+function loop(I, loop) {
   while (true) {
     var it = _pop_TOS(I);
     var TOS = it[0];
     if (!TOS) { break; };
-    I = handle_sequence(it[1], loop)
+    I = sequence(it[1], loop)
   }
   return I;
 }
@@ -178,6 +178,20 @@ var library = {
     return [I[0][1], I[1]];
   },
 
+  tuck: function tuck(I) {
+    var stack = I[0];
+    var t = pop(stack, 2);
+    stack = push(t[2], t[0], t[1], t[0])
+    return [stack, I[1]];
+  },
+
+  over: function over(I) {
+    var stack = I[0];
+    var t = pop(stack, 2);
+    stack = push(t[2], t[1], t[0], t[1])
+    return [stack, I[1]];
+  },
+
   lookup: function lookup(I) {
     var stack = I[0], name = stack[0];
     word = get(I[1], name)
@@ -193,6 +207,12 @@ var library = {
     return [stack, dictionary];
   },
 
+  forget: function forget(I) {
+    var stack = I[0], name = stack[0];
+    var dictionary = del(I[1], name)
+    return [stack[1], dictionary];
+  },
+
   NewSeqWord: function NewSeqWord(I) {
     var stack = I[0], s = [], item;
     while (stack.length != 0) {
@@ -200,19 +220,19 @@ var library = {
       stack = stack[1];
       s.push(item);
     }
-    s.push(handle_sequence)
+    s.push(sequence)
     stack = [s.reverse(), []];
     return [stack, I[1]];
   },
 
   NewLoopWord: function NewLoopWord(I) {
-    var stack = I[0], s = [handle_loop], item;
+    var stack = I[0], s = [], item;
     while (stack.length != 0) {
       item = stack[0];
       stack = stack[1];
       s.push(item);
     }
-    s.push(handle_loop)
+    s.push(loop)
     stack = [s.reverse(), []];
     return [stack, I[1]];
   },
@@ -220,10 +240,39 @@ var library = {
   NewBranchWord: function NewBranchWord(I) {
     var stack = I[0];
     var t = pop(stack, 2);
-    var b = [handle_branch, t[0], t[1]];
+    var b = [branch, t[0], t[1]];
     stack = [b, t[2]];
     return [stack, I[1]];
   },
+
+  add: function add(I) {
+    var stack = I[0];
+    var t = pop(stack, 2);
+    var result = t[0] + t[1];
+    return [[result, t[2]], I[1]];
+  },
+
+  sub: function sub(I) {
+    var stack = I[0];
+    var t = pop(stack, 2);
+    var result = t[1] - t[0];
+    return [[result, t[2]], I[1]];
+  },
+
+  mul: function mul(I) {
+    var stack = I[0];
+    var t = pop(stack, 2);
+    var result = t[0] * t[1];
+    return [[result, t[2]], I[1]];
+  },
+
+  div: function div(I) {
+    var stack = I[0];
+    var t = pop(stack, 2);
+    var result = t[1] / t[0];
+    return [[result, t[2]], I[1]];
+  },
+
 
 /*
   : function (I) {
@@ -250,6 +299,24 @@ textarea { height: auto; }
 select { width: 100%; }
 
 /* Some bits of miscellaneous CSS */
+ul {
+  border: 1px dashed gray;
+  padding: 3px;
+  margin: 3px;
+}
+
+#commande, #meta_controls {
+  display: inline;
+}
+
+#commande {
+  width: 38%;
+}
+
+form {
+  padding: 1em;
+  margin: 0.5em;
+}
 
 </style>
 
@@ -290,7 +357,9 @@ function stack_item(stack, list) {
 
 function display_item(item, list) {
   if (_.isArray(item)) {
-    display_array(item, list);
+    var li = $('<li></li>');
+    list.append(li);
+    display_array(item, li);
   } else if (_.isString(item)) {
     list.append('<li>&quot;' + item + '&quot;');
   } else if (_.isObject(item) && !_.isUndefined(item.name)) {
@@ -301,21 +370,9 @@ function display_item(item, list) {
 }
 
 function display_array(A, list) {
-  var d = list.append('<ul></ul>').find('ul');
-  _.each(A, function(item) {
-    return display_item(item, d);
-  });
-}
-
-
-//#######################################################################
-//  Support removing extra history.
-//#######################################################################
-function clear_history() {
-  var n = history_list.length;
-  if (n < 2) { return; };
-  history_list.splice(0, n - 1);
-  return false;
+  var d = $('<ul></ul>');
+  _.each(A, function(item) { return display_item(item, d); });
+  list.append(d);
 }
 
 
@@ -324,11 +381,11 @@ function clear_history() {
 //#######################################################################
 
   function post_command(cmd) {
-    cmd = cmd.split(/\s+/);
     console.log('post_command', cmd);
     var I = interpret(ns.I, cmd);
+    console.log('post_command', I);
     ns.I = I;
-    history_list.push(I[0]);
+    history_list[0] = I[0];
     bar();
     create_dictionary_buttons(_.keys(to_obj(I[1])).sort());
   }
@@ -340,7 +397,7 @@ function clear_history() {
     });
     $("#dictionary_buttons").find('a').button().click(function() {
       var cmd = $(this).text();
-      post_command(cmd);
+      post_command([cmd]);
       return false;
     });
   }
@@ -350,29 +407,18 @@ function clear_history() {
 //#######################################################################
 
   $("#meta_controls").buttonset();
-  $("#clickit").click(clear_history);
 
-  $("#run_command").button();
   $("form").submit(function() {
-    var command = $("#commande").val();
-//    if (command == "") { return false; };
+    var command = $("#commande").val().split(/\s+/);
     post_command(command);
     return false;
   });
 
-  $("#entry_controls").buttonset();
-  $("#runit").click(function() { $("form").submit(); return false; });
+  $("#runit").click(function() { return $("form").submit(); });
+
   $("#stackit").click(function() {
-    var cmd = '"' + $("#commande").val() + '"';
+    var cmd = ['"' + $("#commande").val() + '"'];
     post_command(cmd);
-    return false;
-  });
-  $("#lookit").click(function() {
-    var command = $("#commande").val();
-    command = command.split(/\s+/);
-    command = _.map(command, function(z) { return '"' + z + '"'; });
-    command = command.join(" lookup ").concat(" lookup");
-    post_command(command);
     return false;
   });
 
@@ -397,31 +443,34 @@ function clear_history() {
 <body>
 
 <h1>Hi There!</h1>
+<center>
+<iframe width="600" height="450" src="http://www.youtube.com/embed/VW8rAyJt7N4" frameborder="0" allowfullscreen></iframe>
+</center>
 <div id="container">
 
-<div><ul id="stack_display"></ul></div>
-<div id="dictionary_buttons"></div>
+<div style="float:left">
+ <h3>Stack of Data</h3>
+ <ul id="stack_display"></ul>
+</div>
 
+<div style="float:right;width:62%">
+ <h3>Dictionary of Commands</h3>
+ <div id="dictionary_buttons"></div>
+</div>
+
+<div style="clear:both;"></div>
 <div>
-<form>
- <input id="commande" name="command" type="text" />
-</form>
-</div>
-
-<div class="ffll" id="meta_controls">
- <a href="#" id="clickit">clear history</a>
- <a href="#" id="zoom">zoom</a>
- <a href="#" id="clear_entry">clear text</a>
-</div>
-
-<div class="ffll" id="entry_controls">
- <a href="#" id="runit">run</a>
- <a href="#" id="stackit">push</a>
- <a href="#" id="lookit">look up</a>
+ <form>
+  <input id="commande" name="command" type="text" />
+  <div id="meta_controls">
+   <a href="#" id="runit">interpret</a>
+   <a href="#" id="stackit">push as text</a>
+   <a href="#" id="clear_entry">clear text</a>
+  </div>
+ </form>
 </div>
 
 </div>
-
 </body>
 </html>
 
