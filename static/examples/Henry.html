@@ -255,6 +255,20 @@ ul {
   padding: 3px;
   margin: 3px;
 }
+
+#commande, #meta_controls {
+  display: inline;
+}
+
+#commande {
+  width: 38%;
+}
+
+form {
+  padding: 1em;
+  margin: 0.5em;
+}
+
 </style>
 
 <script src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.0.1/d3.v3.min.js"></script>
@@ -381,14 +395,19 @@ function display_array(A, list) {
 
 <h1>Hi There!</h1>
 <div id="container">
+
 <div style="float:left">
  <h3>Stack of Data</h3>
- <ul id="stack_display"></ul></div>
-<div style="float:right">
+ <ul id="stack_display"></ul>
+</div>
+
+<div style="float:right;width:62%">
  <h3>Dictionary of Commands</h3>
  <div id="dictionary_buttons"></div>
 </div>
-<div style="clear:both">
+
+<div style="clear:both;"></div>
+<div>
  <form>
   <input id="commande" name="command" type="text" />
   <div id="meta_controls">
@@ -398,6 +417,7 @@ function display_array(A, list) {
   </div>
  </form>
 </div>
+
 </div>
 </body>
 </html>
