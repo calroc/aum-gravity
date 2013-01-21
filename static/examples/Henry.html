@@ -206,7 +206,7 @@ var library = {
   },
 
   NewLoopWord: function NewLoopWord(I) {
-    var stack = I[0], s = [handle_loop], item;
+    var stack = I[0], s = [], item;
     while (stack.length != 0) {
       item = stack[0];
       stack = stack[1];
@@ -250,7 +250,11 @@ textarea { height: auto; }
 select { width: 100%; }
 
 /* Some bits of miscellaneous CSS */
-
+ul {
+  border: 1px dashed gray;
+  padding: 3px;
+  margin: 3px;
+}
 </style>
 
 <script src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.0.1/d3.v3.min.js"></script>
@@ -375,9 +379,14 @@ function display_array(A, list) {
 
 <h1>Hi There!</h1>
 <div id="container">
-<div><ul id="stack_display"></ul></div>
-<div id="dictionary_buttons"></div>
-<div>
+<div style="float:left">
+ <h3>Stack of Data</h3>
+ <ul id="stack_display"></ul></div>
+<div style="float:right">
+ <h3>Dictionary of Commands</h3>
+ <div id="dictionary_buttons"></div>
+</div>
+<div style="clear:both">
  <form>
   <input id="commande" name="command" type="text" />
   <div id="meta_controls">
