@@ -335,8 +335,10 @@ $(function() {
 
   g.append("svg:rect")
   .attr("class", "fram")
-  .attr("width", width)
-  .attr("height", height)
+  .attr("x", 0.5)
+  .attr("y", 0.5)
+  .attr("width", width - 1)
+  .attr("height", height - 1)
   ;
 
 
@@ -558,9 +560,9 @@ function clear_history() {
   function new_group(I) {
     var grp = g.append("svg:g")
       .attr("class", "newframe")
-      .append("svg:rect")
-      .attr("x", half_width)
-      .attr("y", half_height)
+      .attr("transform", "translate(" + half_width +" " + half_height + ")")
+      ;
+    grp.append("svg:rect")
       .attr("width", 100)
       .attr("height", 161)
       .attr("fill", "none")
@@ -597,6 +599,18 @@ function clear_history() {
     var attr_name = t[0], attr_value = t[1];
     var f = function(T) { T.attr(attr_name, attr_value); };
     return [[f, stack], dictionary];
+  };
+
+  library.append_image = function append_image(I) {
+    var stack = I[0], dictionary = I[1];
+    var t = pop(stack, 2);
+    stack = t[2];
+    var image_url = t[0], group = t[1];
+    var img = group.append("image")
+      .attr('width', 64)
+      .attr('height', 64)
+      .attr("xlink:href", image_url);
+    return [[img, stack], dictionary];
   };
 
   (function() {
