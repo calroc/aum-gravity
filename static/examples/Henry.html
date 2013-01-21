@@ -294,7 +294,9 @@ function stack_item(stack, list) {
 
 function display_item(item, list) {
   if (_.isArray(item)) {
-    display_array(item, list);
+    var li = $('<li></li>');
+    list.append(li);
+    display_array(item, li);
   } else if (_.isString(item)) {
     list.append('<li>&quot;' + item + '&quot;');
   } else if (_.isObject(item) && !_.isUndefined(item.name)) {
@@ -349,7 +351,7 @@ function display_array(A, list) {
     return false;
   });
 
-  $("#runit").click($("form").submit);
+  $("#runit").click(function() { return $("form").submit(); });
 
   $("#stackit").click(function() {
     var cmd = ['"' + $("#commande").val() + '"'];
