@@ -116,26 +116,26 @@ function _pop_TOS(I) {
   return [TOS, [stack, dictionary]];
 }
 
-function handle_sequence(I, seq) {
+function sequence(I, seq) {
   var body = seq.slice(1);
   return _.reduce(body, function(interpreter, func) {
     return apply_func(interpreter, func);
   }, I);
 }
 
-function handle_branch(I, branch) {
+function branch(I, branch) {
   var it = _pop_TOS(I);
   var TOS = it[0];
   var func = branch[(!!TOS) ? 1 : 2]; // i.e. true = 1; false = 2
   return apply_func(it[1], func);
 }
 
-function handle_loop(I, loop) {
+function loop(I, loop) {
   while (true) {
     var it = _pop_TOS(I);
     var TOS = it[0];
     if (!TOS) { break; };
-    I = handle_sequence(it[1], loop)
+    I = sequence(it[1], loop)
   }
   return I;
 }
@@ -200,7 +200,7 @@ var library = {
       stack = stack[1];
       s.push(item);
     }
-    s.push(handle_sequence)
+    s.push(sequence)
     stack = [s.reverse(), []];
     return [stack, I[1]];
   },
@@ -212,7 +212,7 @@ var library = {
       stack = stack[1];
       s.push(item);
     }
-    s.push(handle_loop)
+    s.push(loop)
     stack = [s.reverse(), []];
     return [stack, I[1]];
   },
@@ -220,7 +220,7 @@ var library = {
   NewBranchWord: function NewBranchWord(I) {
     var stack = I[0];
     var t = pop(stack, 2);
-    var b = [handle_branch, t[0], t[1]];
+    var b = [branch, t[0], t[1]];
     stack = [b, t[2]];
     return [stack, I[1]];
   },
