@@ -284,6 +284,7 @@ function bar() {
 
 function stack_item(stack, list) {
   if (stack.length == 0) { return; };
+  console.log(stack.length, stack);
   display_item(stack[0], list);
   stack_item(stack[1], list);
 }
@@ -301,10 +302,11 @@ function display_item(item, list) {
 }
 
 function display_array(A, list) {
-  var d = list.append('<ul></ul>').find('ul');
+  var d = $('<ul></ul>');
   _.each(A, function(item) {
     return display_item(item, d);
   });
+  list.append(d);
 }
 
 
