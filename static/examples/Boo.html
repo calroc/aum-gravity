@@ -1,0 +1,31 @@
+<html>
+<head>
+<title>Xerblin Generic</title>
+<meta charset="utf-8">
+<script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.3/underscore-min.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.0.1/d3.v3.min.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
+<script src="../xerblin.slim.js"></script>
+<script>
+
+var history_list = [], ns = {};
+
+$(function() {
+
+  (function() {
+    ns.I = xerblin.create_new_interpreter();
+    history_list.push(ns.I[0]);
+    var names = _.keys(xerblin.to_obj(ns.I[1])).sort();
+    console.log(names);
+  })();
+
+});
+</script>
+</head>
+<body>
+<h1>Hi There!</h1>
+</body>
+</html>
+
