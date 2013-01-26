@@ -12,6 +12,21 @@ textarea { height: auto; }
 select { width: 100%; }
 
 /* Some bits of miscellaneous CSS */
+
+@import url(http://fonts.googleapis.com/css?family=Cutive|Oxygen:400,700);
+
+body {
+    line-height: 1.5;
+    font-family: 'Oxygen', serif;
+    color: #333333;
+}
+
+h1, h2, h3, h4, h5, h6, .heavy {
+	font-family: 'Cutive', sans-serif;
+	font-weight: bold;
+}
+
+
 ul {
   border: 1px dashed gray;
   padding: 3px;
@@ -30,6 +45,19 @@ form {
   padding: 1em;
   margin: 0.5em;
 }
+
+
+#docs {
+/*  font-family: 'Cutive',sans-serif; */
+  max-width: 33em;
+  margin-left: 5em;
+  
+}
+#docs ul {
+  border: none;
+  margin-left: 2em;
+}
+
 
 </style>
 <script src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.0.1/d3.v3.min.js"></script>
@@ -90,9 +118,25 @@ var library = {
     return [[result, t[2]], I[1]];
   },
 
+  self: function self(I) {
+    return [[I, I[0]], I[1]];
+  },
+
+  jq: function jq(I) {
+    I[0][0] = $(I[0][0]);
+    return I;
+  },
+
+  append: function append(I) {
+    var t = xerblin.pop(I[0], 2);
+    var result = t[1].append(t[0]);
+    return [[result, t[2]], I[1]];
+  },
+
 /*
-  : function (I) {
-    return [];
+    : function (I) {
+      return [I[0], I[1]];
+    },
   },
 */
 
@@ -220,6 +264,8 @@ function display_array(A, list) {
 <body>
 
 <h1>Hi There!</h1>
+<p>Welcome to the <span class="heavy">Xerblin Demo</span>, a live interactive interpreter embedded in a webpage.</p>
+
 <div id="container">
 
 <div style="float:left">
@@ -243,6 +289,49 @@ function display_array(A, list) {
   </div>
  </form>
 </div>
+
+</div>
+
+<div id="docs">
+
+<h3>Xerblin is a Human-Computer Interface</h3>
+
+<p>It provides a single metaphor for interacting with computers that's simple enough to teach to children yet provides facilities that are useful to advanced programmers. It can integrate all levels of software from the <a href="http://thinkpigeon.blogspot.com/2012/12/crushingly-simple-user-interface.html">Desktop</a> to <a href="https://github.com/PhoenixBureau/PigeonComputer/blob/master/docs/pigeon_firmware.rst">assembly language</a>.
+
+<p>There are three basic user-facing elements to a Xerblin system.
+
+<ul>
+    <li><span class="heavy">Stack</span> - a place to put objects for user manipulation. This is similar to a Clipboard but it can hold more than one item at a time. Commands operate on the items on the Stack.
+    <li><span class="heavy">Dictionary</span> - a place to keep commands. Any command that is inscribed in the Dictionary can be run from the user interface.
+    <li><span class="heavy">Interpreter</span> - A very simple command interpreter that takes care of running commands with the Stack. 
+</ul>
+
+<p>In addition to the above three UI elements there are discrete commands that provide the basic functionality of the system and that can be composed into more complex commands. They live in the Dictionary and act upon the Stack. They can be composed into compound commands using three primal relations:
+
+<ul>
+    <li><span class="heavy">Sequence</span> - do one thing after another.
+    <li><span class="heavy">Loop</span> - do something over again.
+    <li><span class="heavy">Branch</span> - do one thing or another.
+</ul>
+
+<p>Using the above four relations compound commands can be composed to perform more involved tasks using the built-in or user-provided "primitives" and other compound commands.
+
+<p>Composition can be done by program, by command line, in the GUI using the mouse and keyboard, or by means of parsing languages.
+
+<p>With a rich set of basic commands and the four kinds of compound commands you have a completely general computer interface that allows for customization and flexibility and can be easily understood and mastered by the average user.
+
+<h4>Links</h4>
+
+<p>Some links:
+
+<ul>
+    <li><a href="https://code.google.com/p/xerblin/">The old project on Google Code</a>. This is still the reference implementation.
+    <li><a href="http://phoenixbureau.github.com/PigeonComputer/">Pigeon Computer</a> is a project I have to develop a simple system to teach computer programing. It includes both a low-level version in assembly language and a high-level version in Python with a Tkinter GUI.
+    <li><a href="https://github.com/calroc/aum-gravity/tree/mk">Experimental web versions.</a> The Python version embedded in a Flask server, and a Javascript port of the Xerblin engine along with a couple of demo pages.
+</ul>
+
+
+
 
 </div>
 </body>
