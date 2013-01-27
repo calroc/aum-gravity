@@ -18,7 +18,7 @@ def index():
     return render_template(
       'index.html',
       title='This is Certainly a Title',
-      hello_url=url_for('hello'),
+      hello_url=url_for('skew'),
       )
 
 
