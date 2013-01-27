@@ -1,0 +1,454 @@
+<html>
+<head>
+<title>Xerblin and D3.js</title>
+<meta charset="utf-8">
+</script>
+<style>
+/* from Foundation CSS */
+input[type="text"], input[type="password"], input[type="date"], input[type="datetime"], input[type="email"], input[type="number"], input[type="search"], input[type="tel"], input[type="time"], input[type="url"], textarea { background-color: white; font-family: inherit; border: 1px solid #cccccc; -webkit-border-radius: 2px; -moz-border-radius: 2px; -ms-border-radius: 2px; -o-border-radius: 2px; border-radius: 2px; -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1); -moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1); box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1); color: rgba(0, 0, 0, 0.75); display: block; font-size: 14px; margin: 0 0 12px 0; padding: 6px; height: 32px; width: 100%; -webkit-transition: all 0.15s linear; -moz-transition: all 0.15s linear; -o-transition: all 0.15s linear; transition: all 0.15s linear; }
+input[type="text"]:focus, input[type="password"]:focus, input[type="date"]:focus, input[type="datetime"]:focus, input[type="email"]:focus, input[type="number"]:focus, input[type="search"]:focus, input[type="tel"]:focus, input[type="time"]:focus, input[type="url"]:focus, textarea:focus { background: #fafafa; border-color: #b3b3b3; }
+input[type="text"][disabled], input[type="password"][disabled], input[type="date"][disabled], input[type="datetime"][disabled], input[type="email"][disabled], input[type="number"][disabled], input[type="search"][disabled], input[type="tel"][disabled], input[type="time"][disabled], input[type="url"][disabled], textarea[disabled] { background-color: #ddd; }
+textarea { height: auto; }
+
+/* Some bits of miscellaneous CSS */
+
+@import url(http://fonts.googleapis.com/css?family=Cutive|Oxygen:400,700);
+
+body {
+    line-height: 1.5;
+    font-family: 'Oxygen', serif;
+    color: #333333;
+}
+
+h1, h2, h3, h4, h5, h6, .heavy {
+	font-family: 'Cutive', sans-serif;
+	font-weight: bold;
+}
+
+
+ul {
+  border: 1px dashed gray;
+  padding: 3px;
+  margin: 3px;
+}
+
+#commande, #meta_controls {
+  display: inline;
+}
+
+#commande {
+  width: 38%;
+}
+
+form {
+  padding: 1em;
+  margin: 0.5em;
+}
+
+
+#docs {
+/*  font-family: 'Cutive',sans-serif; */
+  max-width: 33em;
+  margin-left: 5em;
+  
+}
+#docs ul {
+  border: none;
+  margin-left: 2em;
+}
+
+
+
+svg {
+  border: 1px solid blue;
+  margin-bottom: 1em;
+}
+circle {
+  stroke-width: 1.5px;
+}
+rect.fram {
+  stroke-width: 1.5px;
+  stroke: pink;
+  fill: none;
+}
+
+.newframe > rect {
+  stroke-width: 1.5px;
+  stroke: green;
+}
+
+a {
+  margin-bottom: 0.5em;
+}
+
+.ffll {
+  display: inline;
+  margin-right: 0.5em;
+}
+
+</style>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.0.1/d3.v3.min.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.3/underscore-min.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
+<script src="../xerblin.slim.js"></script>
+<script>
+
+
+//#######################################################################
+//  Global namespace.
+//#######################################################################
+
+var width = 1500, height = 480, marg = 23;
+var stack_align = width / 3;
+var half_width = width / 2;
+var half_height = height / 2;
+
+var wk = d3.scale.linear().range([marg, width - marg]);
+var hk = d3.scale.linear().range([marg, height - marg]);
+
+var k = d3.scale.linear().domain([0, 23]);
+var w = d3.scale.linear().domain([-1, 24]).range([marg, width - marg]);
+var rad = d3.scale.linear().domain([0, 24]).range([0.0, 6.283185307179586]);
+var deg = d3.scale.linear().domain([0, 24]).range([0.0, 360.0]);
+var j = d3.scale.pow().exponent(5).domain([0.0, 1.0]).range([0, 70])
+
+var history_list = [], ns = {};
+
+
+$(function() {
+
+//#######################################################################
+//  Set up the viewBox and resizing.
+//#######################################################################
+
+  var the_svg = $("#pony");
+  var aspect = the_svg.width() / the_svg.height();
+  $(window).on("resize", function() {
+    var the_svg = $("#pony");
+    var container = $("#container");
+    var targetWidth = container.width();
+    the_svg.attr("width", targetWidth);
+    the_svg.attr("height", Math.round(targetWidth / aspect));
+  }).trigger("resize");
+
+
+//#######################################################################
+//  Create the main group.
+//#######################################################################
+
+  var svg = d3.select("svg");
+  var g = svg.append("svg:g");
+
+  g.append("svg:rect")
+  .attr("class", "fram")
+  .attr("x", 0.5)
+  .attr("y", 0.5)
+  .attr("width", width - 1)
+  .attr("height", height - 1)
+  ;
+
+
+//#######################################################################
+//  Zoom in and out.
+//#######################################################################
+
+function zoomin() {
+  g.transition()
+    .duration(1000)
+    .attr("transform", function(d) {
+      var scale_factor = 0.68;
+      var x = width * scale_factor / 4;
+      var y = height * scale_factor / 4;
+      return "translate(" + x + " " + y + ") scale(" + scale_factor + ")";
+    });
+  return false;
+}
+
+function zoomout() {
+  g.transition()
+    .duration(1000)
+    .attr("transform", "translate(0 0) scale(1.0)");
+  return false;
+}
+
+
+//#######################################################################
+//  Render Stack.
+//#######################################################################
+
+function bar() {
+  var n = history_list.length;
+  var sd = $('#stack_display');
+  sd.contents().remove();
+  stack_item(history_list[history_list.length - 1], sd);
+}
+
+function stack_item(stack, list) {
+  if (stack.length == 0) { return; };
+  display_item(stack[0], list);
+  stack_item(stack[1], list);
+}
+
+function display_item(item, list) {
+  if (_.isArray(item)) {
+    var li = $('<li></li>');
+    list.append(li);
+    display_array(item, li);
+  } else if (_.isString(item)) {
+    list.append('<li>&quot;' + item + '&quot;');
+  } else if (_.isObject(item) && !_.isUndefined(item.name)) {
+    list.append('<li>' + item.name + '()');
+  } else {
+    list.append('<li>' + item);
+  }
+}
+
+function display_array(A, list) {
+  var d = $('<ul></ul>');
+  _.each(A, function(item) { return display_item(item, d); });
+  list.append(d);
+}
+
+
+//#######################################################################
+//  Send commands to the server and update the display(s).
+//#######################################################################
+
+  function post_command(cmd) {
+//    console.log('post_command', cmd);
+    var I = xerblin.interpret(ns.I, cmd);
+//    console.log('post_command', I);
+    ns.I = I;
+    history_list[0] = I[0];
+    bar();
+    create_dictionary_buttons(_.keys(xerblin.to_obj(I[1])).sort());
+  }
+  
+  function create_dictionary_buttons(names) {
+    $("#dictionary_buttons").find('a').remove();
+    _.each(names, function(name) {
+      $("#dictionary_buttons").append('<a href="#" id="' + name + '">' + name + '</a>');
+    });
+    $("#dictionary_buttons").find('a').button().click(function() {
+      var cmd = $(this).text();
+      post_command([cmd]);
+      return false;
+    });
+  }
+
+
+//#######################################################################
+//  Set up the controls.
+//#######################################################################
+
+  $("#meta_controls").buttonset();
+
+  $("#zoom").toggle(zoomin, zoomout);
+
+
+  $("form").submit(function() {
+    var command = $("#commande").val().split(/\s+/);
+    post_command(command);
+    $("#commande").val('');
+    return false;
+  });
+
+  $("#runit").click(function() { return $("form").submit(); });
+
+  $("#stackit").click(function() {
+    var cmd = ['"' + $("#commande").val() + '"'];
+    post_command(cmd);
+    return false;
+  });
+
+  $("#clear_entry").button().click(function() {
+    $("#commande").val("");
+    return false;
+  });
+
+
+//#######################################################################
+//  Library of Additional Command Words.
+//#######################################################################
+
+var library = {
+
+  tuck: function tuck(I) {
+    var stack = I[0];
+    var t = xerblin.pop(stack, 2);
+    stack = xerblin.push(t[2], t[0], t[1], t[0])
+    return [stack, I[1]];
+  },
+
+  over: function over(I) {
+    var stack = I[0];
+    var t = xerblin.pop(stack, 2);
+    stack = xerblin.push(t[2], t[1], t[0], t[1])
+    return [stack, I[1]];
+  },
+
+  forget: function forget(I) {
+    var stack = I[0], name = stack[0];
+    var dictionary = xerblin.del(I[1], name)
+    return [stack[1], dictionary];
+  },
+
+  add: function add(I) {
+    var stack = I[0];
+    var t = xerblin.pop(stack, 2);
+    var result = t[0] + t[1];
+    return [[result, t[2]], I[1]];
+  },
+
+  sub: function sub(I) {
+    var stack = I[0];
+    var t = xerblin.pop(stack, 2);
+    var result = t[1] - t[0];
+    return [[result, t[2]], I[1]];
+  },
+
+  mul: function mul(I) {
+    var stack = I[0];
+    var t = xerblin.pop(stack, 2);
+    var result = t[0] * t[1];
+    return [[result, t[2]], I[1]];
+  },
+
+  div: function div(I) {
+    var stack = I[0];
+    var t = xerblin.pop(stack, 2);
+    var result = t[1] / t[0];
+    return [[result, t[2]], I[1]];
+  },
+
+  self: function self(I) {
+    return [[I, I[0]], I[1]];
+  },
+
+  jq: function jq(I) {
+    I[0][0] = $(I[0][0]);
+    return I;
+  },
+
+  append: function append(I) {
+    var t = xerblin.pop(I[0], 2);
+    var result = t[1].append(t[0]);
+    return [[result, t[2]], I[1]];
+  },
+  };
+
+  library.new_group = function new_group(I) {
+    var grp = g.append("svg:g")
+      .attr("class", "newframe")
+      .attr("transform", "translate(" + half_width +" " + half_height + ")")
+      ;
+    grp.append("svg:rect")
+      .attr("width", 100)
+      .attr("height", 161)
+      .attr("fill", "none")
+      ;
+    return [[grp, I[0]], I[1]]
+  }
+
+  library.set_attr = function set_attr(I) {
+    var stack = I[0], dictionary = I[1];
+    var t = pop(stack, 3);
+    stack = t[3];
+    var attr_name = t[0], attr_value = t[1], thing = t[2];
+    thing.attr(attr_name, attr_value);
+    return [[thing, stack], dictionary]
+  };
+
+  library.trans = function trans(I) {
+    var stack = I[0], dictionary = I[1];
+    var t = pop(stack, 4);
+    stack = t[4];
+    var effect = t[0], delay = t[1], duration = t[2], thing = t[3];
+    thing.transition()
+    .delay(delay)
+    .duration(duration)
+    .call(effect);
+    return [[thing, stack], dictionary]
+  };
+
+  library.make_effect = function make_effect(I) {
+    var stack = I[0], dictionary = I[1];
+    var t = pop(stack, 2);
+    stack = t[2];
+    var attr_name = t[0], attr_value = t[1];
+    var f = function(T) { T.attr(attr_name, attr_value); };
+    return [[f, stack], dictionary];
+  };
+
+  library.append_image = function append_image(I) {
+    var stack = I[0], dictionary = I[1];
+    var t = pop(stack, 2);
+    stack = t[2];
+    var image_url = t[0], group = t[1];
+    var img = group.append("image")
+      .attr('width', 64)
+      .attr('height', 64)
+      .attr("xlink:href", image_url);
+    return [[img, stack], dictionary];
+
+};
+
+
+//#######################################################################
+//  Create Interpreter.
+//#######################################################################
+
+  (function() {
+    var I = xerblin.create_new_interpreter();
+    _.each(library, function(value, key) {
+      I[1] = xerblin.insert(I[1], key, value);
+    });
+    ns.I = I;
+    history_list.push(ns.I[0]);
+    bar();
+    var names = _.keys(xerblin.to_obj(I[1])).sort();
+    create_dictionary_buttons(names);
+  })();
+
+});
+</script>
+
+</head>
+<body>
+
+<h1>Hi There!</h1>
+<svg id="pony" width="1500" height="480" viewBox="0 0 1500 480" perserveAspectRatio="xMidYMid"></svg>
+<br>
+
+ <a href="#" id="zoom">zoom</a>
+
+<div id="container">
+  <div style="float:left">
+   <h3>Stack of Data</h3>
+   <ul id="stack_display"></ul>
+  </div>
+
+  <div style="float:right;width:62%">
+   <h3>Dictionary of Commands</h3>
+   <div id="dictionary_buttons"></div>
+  </div>
+
+  <div style="clear:both;"></div>
+
+  <div>
+   <form>
+    <input id="commande" name="command" type="text" />
+    <div id="meta_controls">
+     <a href="#" id="runit">interpret</a>
+     <a href="#" id="stackit">push as text</a>
+     <a href="#" id="clear_entry">clear text</a>
+    </div>
+   </form>
+  </div>
+</div>
+
+</body>
+</html>
+
