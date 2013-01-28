@@ -57,8 +57,6 @@ form {
   margin-left: 2em;
 }
 
-
-
 svg {
   border: 1px solid blue;
   margin-bottom: 1em;
@@ -77,13 +75,14 @@ rect.fram {
   stroke: green;
 }
 
-a {
-  margin-bottom: 0.5em;
-}
-
 .ffll {
   display: inline;
   margin-right: 0.5em;
+}
+
+.ui-button-text {
+  font-family: 'Oxygen', serif;
+  font-size: 1em;
 }
 
 </style>
@@ -229,7 +228,7 @@ function display_array(A, list) {
   function create_dictionary_buttons(names) {
     $("#dictionary_buttons").find('a').remove();
     _.each(names, function(name) {
-      $("#dictionary_buttons").append('<a href="#" id="' + name + '">' + name + '</a>');
+      $("#dictionary_buttons").append('<a href="#" id="' + name + '">' + name + '</a> ');
     });
     $("#dictionary_buttons").find('a').button().click(function() {
       var cmd = $(this).text();
@@ -354,7 +353,7 @@ var library = {
 
   library.set_attr = function set_attr(I) {
     var stack = I[0], dictionary = I[1];
-    var t = pop(stack, 3);
+    var t = xerblin.pop(stack, 3);
     stack = t[3];
     var attr_name = t[0], attr_value = t[1], thing = t[2];
     thing.attr(attr_name, attr_value);
@@ -363,7 +362,7 @@ var library = {
 
   library.trans = function trans(I) {
     var stack = I[0], dictionary = I[1];
-    var t = pop(stack, 4);
+    var t = xerblin.pop(stack, 4);
     stack = t[4];
     var effect = t[0], delay = t[1], duration = t[2], thing = t[3];
     thing.transition()
@@ -375,7 +374,7 @@ var library = {
 
   library.make_effect = function make_effect(I) {
     var stack = I[0], dictionary = I[1];
-    var t = pop(stack, 2);
+    var t = xerblin.pop(stack, 2);
     stack = t[2];
     var attr_name = t[0], attr_value = t[1];
     var f = function(T) { T.attr(attr_name, attr_value); };
@@ -384,7 +383,7 @@ var library = {
 
   library.append_image = function append_image(I) {
     var stack = I[0], dictionary = I[1];
-    var t = pop(stack, 2);
+    var t = xerblin.pop(stack, 2);
     stack = t[2];
     var image_url = t[0], group = t[1];
     var img = group.append("image")
@@ -418,7 +417,6 @@ var library = {
 </head>
 <body>
 
-<h1>Hi There!</h1>
 <svg id="pony" width="1500" height="480" viewBox="0 0 1500 480" perserveAspectRatio="xMidYMid"></svg>
 <br>
 
